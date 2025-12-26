@@ -138,7 +138,7 @@ export const Route = createRootRoute({
       },
       {
         name: 'theme-color',
-        content: '#f97316',
+        content: '#3b82f6',
       },
       // Base OG tags (can be overridden by child routes)
       {

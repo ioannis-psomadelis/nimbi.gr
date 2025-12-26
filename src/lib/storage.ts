@@ -42,33 +42,16 @@ export function removeLocation(id: string): void {
 }
 
 // Selected model functions
-export function getSelectedModel(): ModelId | null {
-  if (typeof window === 'undefined') return null
-
-  try {
-    const stored = Cookies.get(SELECTED_MODEL_KEY)
-    return stored as ModelId | null
-  } catch {
-    return null
-  }
-}
-
 export function saveSelectedModel(model: ModelId): void {
   Cookies.set(SELECTED_MODEL_KEY, model, COOKIE_OPTIONS)
 }
 
 // Pro mode functions
-export function getProMode(): boolean {
-  if (typeof window === 'undefined') return false
-
-  try {
-    const stored = Cookies.get(PRO_MODE_KEY)
-    return stored === 'true'
-  } catch {
-    return false
-  }
-}
-
 export function saveProMode(enabled: boolean): void {
   Cookies.set(PRO_MODE_KEY, enabled ? 'true' : 'false', COOKIE_OPTIONS)
+}
+
+export function loadProMode(): boolean {
+  const value = Cookies.get(PRO_MODE_KEY)
+  return value === 'true'
 }

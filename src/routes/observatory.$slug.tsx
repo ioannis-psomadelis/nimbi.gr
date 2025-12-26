@@ -54,9 +54,9 @@ export const Route = createFileRoute('/observatory/$slug')({
     // Get location, saved locations, selected model, and pro mode from server
     const [location, savedLocations, savedModel, proMode] = await Promise.all([
       getLocationBySlug({ data: params.slug }),
-      getServerSavedLocations(),
-      getServerSelectedModel(),
-      getServerProMode(),
+      getServerSavedLocations({ data: undefined }),
+      getServerSelectedModel({ data: undefined }),
+      getServerProMode({ data: undefined }),
     ])
 
     // Get QueryClient for this request (new instance on server, singleton on client)

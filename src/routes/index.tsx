@@ -9,6 +9,7 @@ import { LanguageToggle } from '@/components/ui/language-toggle'
 import { getAllLocations, createLocationFromCoords } from '../lib/server/locations'
 import { searchLocations, type GeocodeResult } from '../lib/server/geocode'
 import i18n from '../lib/i18n'
+import { CLOUD_PATH } from '../components/ui/logo'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
@@ -228,7 +229,7 @@ function HomePage() {
         <Link to="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-white/90 dark:bg-primary/15 flex items-center justify-center border border-white/50 dark:border-primary/20 group-hover:bg-white dark:group-hover:bg-primary/25 transition-colors shadow-md dark:shadow-none">
             <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CLOUD_PATH} />
             </svg>
           </div>
           <span className="font-semibold text-white dark:text-foreground/90 text-sm tracking-wide drop-shadow-md dark:drop-shadow-none">nimbi</span>
@@ -246,14 +247,14 @@ function HomePage() {
           {/* Hero */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/15">
-                <svg className="w-7 h-7 text-primary" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z" />
+              <div className="w-14 h-14 rounded-2xl bg-white/90 dark:bg-primary/15 flex items-center justify-center border border-white/50 dark:border-primary/20 shadow-lg dark:shadow-none">
+                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CLOUD_PATH} />
                 </svg>
               </div>
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-white dark:text-foreground tracking-tight mb-3 drop-shadow-lg">
-              Nimbus
+              nimbi
             </h1>
             <p className="text-white/80 dark:text-foreground/60 text-sm sm:text-base max-w-xs mx-auto leading-relaxed drop-shadow-md">
               {t('multiModelWeatherObservatory')}
@@ -282,7 +283,7 @@ function HomePage() {
             )}
 
             {/* Search input */}
-            <div className="relative" ref={searchContainerRef}>
+            <div className="relative z-50" ref={searchContainerRef}>
               <div className="relative">
                 <svg
                   className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40"
@@ -309,12 +310,12 @@ function HomePage() {
 
               {/* Search results dropdown */}
               {showResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 glass-card rounded-xl overflow-hidden z-50 py-1">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/50 shadow-xl rounded-xl overflow-hidden z-50 py-1">
                   {searchResults.map((result, index) => (
                     <button
                       key={`${result.lat}-${result.lon}-${index}`}
                       onClick={() => handleSelectSearchResult(result)}
-                      className="w-full px-4 py-3 text-left hover:bg-primary/10 transition-colors flex items-center gap-3"
+                      className="w-full px-4 py-2.5 text-left hover:bg-primary/10 transition-colors flex items-center gap-3"
                     >
                       <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -332,7 +333,7 @@ function HomePage() {
 
               {/* No results */}
               {showResults && searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 glass-card rounded-xl py-4 px-4 text-center text-foreground/50 text-sm z-50">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/50 shadow-xl rounded-xl py-4 px-4 text-center text-foreground/50 text-sm z-50">
                   {t('noResultsFound')}
                 </div>
               )}

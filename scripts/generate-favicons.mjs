@@ -5,23 +5,30 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const publicDir = join(__dirname, '..', 'public')
 
-// Orange color palette
-const orange = '#f97316'
-const darkBg = '#0a0a0a'
+// Primary blue color (matches app's primary color)
+const primary = '#3b82f6'
+const whiteBg = '#ffffff'
+const darkBg = '#0f172a'
 
-// Cloud SVG for favicons - with rounded rect background and orange border
+// Cloud path - same as used in the app (CLOUD_PATH from logo.tsx)
+const CLOUD_PATH = 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z'
+
+// Favicon SVG with stroke-based cloud (matches app logo)
 const faviconSvg = (size) => {
   const padding = size * 0.03
   const rectSize = size - (padding * 2)
   const borderWidth = Math.max(1, size * 0.06)
   const radius = size * 0.19
-  const cloudScale = size / 32
+  const iconPadding = size * 0.125
+  const iconSize = size - (iconPadding * 2)
+  // Scale stroke width based on size for visibility
+  const strokeWidth = size <= 32 ? 2 : 1.5
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
-  <rect x="${padding}" y="${padding}" width="${rectSize}" height="${rectSize}" rx="${radius}" fill="${darkBg}" stroke="${orange}" stroke-width="${borderWidth}"/>
-  <g transform="translate(${size * 0.125}, ${size * 0.19}) scale(${cloudScale * 0.75})">
-    <path fill="${orange}" d="M20 11c0-.13-.01-.26-.02-.38A5.25 5.25 0 008.8 8 4.125 4.125 0 005 12.5 4.125 4.125 0 009.125 16.5h9a4.125 4.125 0 001.125-8.09V11z"/>
-  </g>
+  <rect x="${padding}" y="${padding}" width="${rectSize}" height="${rectSize}" rx="${radius}" fill="${whiteBg}" stroke="${primary}" stroke-width="${borderWidth}"/>
+  <svg x="${iconPadding}" y="${iconPadding}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">
+    <path d="${CLOUD_PATH}"/>
+  </svg>
 </svg>`
 }
 
@@ -34,17 +41,19 @@ const ogImageSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height=
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  <!-- Cloud icon -->
-  <g transform="translate(500, 180) scale(6)">
-    <path fill="${orange}" d="M25 14.5c0-.17-.01-.34-.02-.5A7 7 0 0011.1 10.5 5.5 5.5 0 006 16a5.5 5.5 0 005.5 5.5h12a5.5 5.5 0 001.5-10.78V14.5z"/>
+  <!-- Cloud icon (stroke-based, matching app) -->
+  <g transform="translate(456, 140)">
+    <svg width="288" height="288" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+      <path d="${CLOUD_PATH}"/>
+    </svg>
   </g>
   <!-- Text -->
-  <text x="600" y="480" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700">nimbi.gr</text>
-  <text x="600" y="540" text-anchor="middle" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="28">Weather Observatory</text>
+  <text x="600" y="500" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700">nimbi.gr</text>
+  <text x="600" y="560" text-anchor="middle" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="28">Weather Observatory</text>
 </svg>`
 
 async function generateFavicons() {
-  console.log('Generating favicons with orange theme...')
+  console.log('Generating favicons with primary blue color...')
 
   // Generate favicon-16x16.png
   await sharp(Buffer.from(faviconSvg(16)))

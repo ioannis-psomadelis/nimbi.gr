@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate, useRouter, Link } from '@tanstack/react-router'
+import { useNavigate, Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Search, MapPin, Loader2, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 import { ProToggle } from '@/components/ui/pro-toggle'
+import { CLOUD_PATH } from '@/components/ui/logo'
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ import {
 import { createLocationFromCoords } from '@/lib/server/locations'
 import { useDebounce } from '@/lib/utils/debounce'
 import { saveProMode } from '@/lib/storage'
+import { getQueryClient } from '@/lib/query-client'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 interface SearchResult {
@@ -47,7 +49,6 @@ export function Header({ proMode = false }: HeaderProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [isScrolled, setIsScrolled] = useState(false)
   const navigate = useNavigate()
-  const router = useRouter()
   const modalInputRef = useRef<HTMLInputElement>(null)
   const isMobile = useIsMobile()
 
@@ -156,10 +157,22 @@ export function Header({ proMode = false }: HeaderProps) {
     }
   }
 
-  const handleProToggle = (enabled: boolean) => {
+  const handleProToggle = useCallback((enabled: boolean) => {
+    // 1. Save the new pro mode setting to cookie
     saveProMode(enabled)
-    router.invalidate({ forcePending: true })
-  }
+
+    // 2. Clear all weather queries from React Query cache
+    // This forces a fresh fetch with the new pro mode setting
+    const queryClient = getQueryClient()
+    queryClient.removeQueries({ queryKey: ['weather'] })
+
+    // 3. Full page reload for clean SSR
+    // reloadDocument forces browser navigation which triggers SSR with new cookie
+    navigate({
+      to: window.location.pathname,
+      reloadDocument: true
+    })
+  }, [navigate])
 
   const showMinCharsHint = query.trim().length > 0 && query.trim().length < MIN_SEARCH_CHARS
 
@@ -175,14 +188,14 @@ export function Header({ proMode = false }: HeaderProps) {
       >
         <div className="w-full flex items-center h-14 px-3 sm:px-4 lg:px-6">
           {/* Left: Logo */}
-          <Link to="/" className="flex items-center gap-2 shrink-0 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/25 to-primary/5 flex items-center justify-center border border-primary/20 group-hover:from-primary/35 group-hover:to-primary/10 transition-all duration-200">
-              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+            <div className="w-9 h-9 rounded-xl bg-white/90 dark:bg-primary/15 flex items-center justify-center border border-white/50 dark:border-primary/20 group-hover:bg-white dark:group-hover:bg-primary/25 transition-colors shadow-md dark:shadow-none">
+              <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CLOUD_PATH} />
               </svg>
             </div>
             <div className="hidden lg:block">
-              <h1 className="text-sm font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">nimbi.gr</h1>
+              <h1 className="text-sm font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">nimbi</h1>
               <p className="text-[10px] text-muted-foreground leading-tight">{t('weatherObservatory')}</p>
             </div>
           </Link>
@@ -225,10 +238,9 @@ export function Header({ proMode = false }: HeaderProps) {
         <Sheet key="search-sheet" open={isSearchOpen} onOpenChange={(open) => !isNavigating && setIsSearchOpen(open)}>
           <SheetContent
             side="bottom"
+            showCloseButton={false}
             className="h-[85vh] rounded-t-2xl p-0 gap-0 flex flex-col bg-card/98 backdrop-blur-xl border-border/40"
           >
-            {/* Hide default close button */}
-            <style>{`[data-slot="sheet-content"] > button[data-slot="sheet-close"] { display: none; }`}</style>
 
             {/* Header with drag handle */}
             <div className="shrink-0 border-b border-border/40 pt-2">
