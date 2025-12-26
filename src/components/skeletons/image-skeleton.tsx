@@ -48,26 +48,26 @@ export function ImageSkeleton({ className }: ImageSkeletonProps) {
         <div className="absolute top-[45%] right-[25%] w-12 h-12 rounded-full border-2 border-muted-foreground/15 border-dashed" />
 
         {/* Simulated isobars (curved lines) */}
-        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
           <path
-            d="M0,40% Q25%,35% 50%,42% T100%,38%"
+            d="M0,40 Q25,35 50,42 T100,38"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1"
+            strokeWidth="0.5"
             className="text-muted-foreground/15"
           />
           <path
-            d="M0,55% Q30%,50% 55%,58% T100%,52%"
+            d="M0,55 Q30,50 55,58 T100,52"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1"
+            strokeWidth="0.5"
             className="text-muted-foreground/15"
           />
           <path
-            d="M0,70% Q20%,65% 45%,72% T100%,68%"
+            d="M0,70 Q20,65 45,72 T100,68"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1"
+            strokeWidth="0.5"
             className="text-muted-foreground/15"
           />
         </svg>

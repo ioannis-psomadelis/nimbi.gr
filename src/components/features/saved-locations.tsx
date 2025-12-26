@@ -40,6 +40,10 @@ export function SavedLocations({ currentLat, currentLon, currentName, initialLoc
   }
 
   const handleNavigateToLocation = async (location: SavedLocation) => {
+    // Don't navigate if already at this location
+    if (location.lat === currentLat && location.lon === currentLon) {
+      return
+    }
     const { slug } = await createLocationFromCoords({ data: { lat: location.lat, lon: location.lon } })
     navigate({ to: '/observatory/$slug', params: { slug } })
   }

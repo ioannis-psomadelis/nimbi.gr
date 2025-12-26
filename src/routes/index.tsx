@@ -8,12 +8,36 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 import { getAllLocations, createLocationFromCoords } from '../lib/server/locations'
 import { searchLocations, type GeocodeResult } from '../lib/server/geocode'
+import i18n from '../lib/i18n'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
     const locations = await getAllLocations()
     return { locations }
   },
+  head: () => ({
+    meta: [
+      {
+        title: i18n.t('metaHomeTitle'),
+      },
+      {
+        name: 'description',
+        content: i18n.t('metaHomeDescription'),
+      },
+      {
+        property: 'og:title',
+        content: i18n.t('metaHomeTitle'),
+      },
+      {
+        property: 'og:description',
+        content: i18n.t('metaHomeDescription'),
+      },
+      {
+        property: 'og:url',
+        content: 'https://nimbi.gr/',
+      },
+    ],
+  }),
   component: HomePage,
 })
 

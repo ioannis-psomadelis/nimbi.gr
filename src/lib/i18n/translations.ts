@@ -28,6 +28,8 @@ export const translations = {
       tryAgain: 'Try again',
       noChartLoaded: 'No chart loaded',
       noDataAvailable: 'No data available',
+      tempHigh: 'High',
+      tempLow: 'Low',
 
       // Models
       models: 'Models',
@@ -172,6 +174,51 @@ export const translations = {
       moderateConfidence: 'Moderate confidence',
       lowerConfidence: 'Lower confidence',
       confidenceExplanation: 'Based on agreement between ECMWF HD, GFS, GEM, and UKMO weather models.',
+
+      // Simple Mode
+      today: 'Today',
+      feelsLike: 'Feels like',
+      kmh: 'km/h',
+      conditionSunny: 'Sunny',
+      conditionPartlyCloudy: 'Partly Cloudy',
+      conditionCloudy: 'Cloudy',
+      conditionRainy: 'Rainy',
+      conditionStormy: 'Stormy',
+
+      // Pro Mode
+      proModeLabel: 'Pro Mode',
+      proModeEnabled: 'Pro Mode ON',
+      proModeDisabled: 'Pro Mode OFF',
+      proModeDescription: 'Show all weather models and advanced charts',
+
+      // Search
+      noResults: 'No results found',
+      minSearchChars: 'Type at least 3 characters',
+      tryDifferentSearch: 'Try a different search term',
+      toNavigate: 'navigate',
+      toSelect: 'select',
+      toClose: 'close',
+      searchLocation: 'Search Location',
+      searchResults: 'Results',
+      findYourLocation: 'Find your location',
+      searchCitiesHint: 'Search for cities, towns, or places',
+
+      // 404 Page
+      pageNotFound: 'Page not found',
+      pageNotFoundDescription: 'The page you\'re looking for doesn\'t exist or has been moved.',
+      backToHome: 'Back to Home',
+
+      // Download
+      download: 'Download',
+      downloadForecast: 'Download forecast as image',
+      downloading: 'Downloading...',
+
+      // SEO Meta
+      metaHomeTitle: 'nimbi.gr - Weather Observatory',
+      metaHomeDescription: 'Multi-model weather forecasts comparing ECMWF, GFS, GEM & UKMO models',
+      metaObservatoryTitle: '{{location}} Weather Forecast | nimbi.gr',
+      metaObservatoryDescription: '7-day weather forecast for {{location}} comparing ECMWF, GFS, GEM & UKMO models',
+      meta404Title: 'Page Not Found | nimbi.gr',
     },
   },
   el: {
@@ -203,6 +250,8 @@ export const translations = {
       tryAgain: 'Δοκιμάστε ξανά',
       noChartLoaded: 'Δεν φορτώθηκε χάρτης',
       noDataAvailable: 'Δεν υπάρχουν διαθέσιμα δεδομένα',
+      tempHigh: 'Μέγιστη',
+      tempLow: 'Ελάχιστη',
 
       // Models
       models: 'Μοντέλα',
@@ -347,6 +396,51 @@ export const translations = {
       moderateConfidence: 'Μέτρια αξιοπιστία',
       lowerConfidence: 'Χαμηλότερη αξιοπιστία',
       confidenceExplanation: 'Βασίζεται στη συμφωνία μεταξύ των μοντέλων ECMWF HD, GFS, GEM και UKMO.',
+
+      // Simple Mode
+      today: 'Σήμερα',
+      feelsLike: 'Αίσθηση',
+      kmh: 'χλμ/ω',
+      conditionSunny: 'Ηλιόλουστο',
+      conditionPartlyCloudy: 'Μερικώς Νεφελώδες',
+      conditionCloudy: 'Νεφελώδες',
+      conditionRainy: 'Βροχερό',
+      conditionStormy: 'Καταιγίδα',
+
+      // Pro Mode
+      proModeLabel: 'Pro Mode',
+      proModeEnabled: 'Pro Mode ΕΝΕΡΓΟ',
+      proModeDisabled: 'Pro Mode ΑΝΕΝΕΡΓΟ',
+      proModeDescription: 'Εμφάνιση όλων των μοντέλων και προηγμένων γραφημάτων',
+
+      // Search
+      noResults: 'Δεν βρέθηκαν αποτελέσματα',
+      minSearchChars: 'Πληκτρολογήστε τουλάχιστον 3 χαρακτήρες',
+      tryDifferentSearch: 'Δοκιμάστε διαφορετικό όρο αναζήτησης',
+      toNavigate: 'πλοήγηση',
+      toSelect: 'επιλογή',
+      toClose: 'κλείσιμο',
+      searchLocation: 'Αναζήτηση Τοποθεσίας',
+      searchResults: 'Αποτελέσματα',
+      findYourLocation: 'Βρείτε την τοποθεσία σας',
+      searchCitiesHint: 'Αναζητήστε πόλεις, κωμοπόλεις ή τοποθεσίες',
+
+      // 404 Page
+      pageNotFound: 'Η σελίδα δεν βρέθηκε',
+      pageNotFoundDescription: 'Η σελίδα που ψάχνετε δεν υπάρχει ή έχει μετακινηθεί.',
+      backToHome: 'Επιστροφή στην Αρχική',
+
+      // Download
+      download: 'Λήψη',
+      downloadForecast: 'Λήψη πρόγνωσης ως εικόνα',
+      downloading: 'Λήψη...',
+
+      // SEO Meta
+      metaHomeTitle: 'nimbi.gr - Μετεωρολογικό Παρατηρητήριο',
+      metaHomeDescription: 'Προγνώσεις καιρού πολλαπλών μοντέλων συγκρίνοντας ECMWF, GFS, GEM & UKMO',
+      metaObservatoryTitle: 'Πρόγνωση Καιρού {{location}} | nimbi.gr',
+      metaObservatoryDescription: '7ήμερη πρόγνωση καιρού για {{location}} συγκρίνοντας μοντέλα ECMWF, GFS, GEM & UKMO',
+      meta404Title: 'Η Σελίδα Δεν Βρέθηκε | nimbi.gr',
     },
   },
 }

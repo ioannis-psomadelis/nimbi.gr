@@ -177,11 +177,3 @@ export function generateWeeklyNarrative(
     primaryModelName: getModelName(forecast.primaryModel),
   }
 }
-
-/**
- * Get confidence dots (filled/empty)
- */
-export function getConfidenceDots(confidence: 'high' | 'medium' | 'low'): string {
-  const dots = { high: '\u25CF\u25CF\u25CF\u25CF\u25CF', medium: '\u25CF\u25CF\u25CF\u25CB\u25CB', low: '\u25CF\u25CF\u25CB\u25CB\u25CB' }
-  return dots[confidence]
-}

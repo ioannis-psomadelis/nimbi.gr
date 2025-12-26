@@ -1,5 +1,7 @@
+import { queryOptions } from '@tanstack/react-query'
 import { WeatherResponseSchema, type WeatherResponse } from '../../types/weather'
 import type { ModelId } from '../../types/models'
+import { MODELS } from '../../types/models'
 
 const HOURLY_PARAMS = [
   'temperature_2m',
@@ -46,4 +48,26 @@ export async function fetchModelData(
 
   const data = await response.json()
   return WeatherResponseSchema.parse(data)
+}
+
+// Query options for all models (pro mode) or just ECMWF (simple mode)
+export function allModelsQueryOptions(lat: number, lon: number, proMode: boolean) {
+  const modelsToFetch = proMode ? MODELS : (['ecmwf-hres'] as const)
+
+  return queryOptions({
+    queryKey: ['weather', 'all', lat, lon, proMode],
+    queryFn: async () => {
+      const results = await Promise.allSettled(
+        modelsToFetch.map((model) => fetchModelData(model, lat, lon))
+      )
+      const modelData: Record<ModelId, WeatherResponse | null> = {} as Record<ModelId, WeatherResponse | null>
+      modelsToFetch.forEach((model, index) => {
+        const result = results[index]
+        modelData[model] = result.status === 'fulfilled' ? result.value : null
+      })
+      return modelData
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes - keep data fresh during navigation
+    gcTime: 1000 * 60 * 30, // 30 minutes - keep in cache
+  })
 }

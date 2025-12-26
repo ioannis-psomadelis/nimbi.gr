@@ -4,6 +4,7 @@ import { type ModelId } from '../types/models'
 
 const LOCATIONS_KEY = 'nimbus_locations'
 const SELECTED_MODEL_KEY = 'nimbus_selected_model'
+const PRO_MODE_KEY = 'pro-mode'
 
 // Cookie options - 1 year expiry
 const COOKIE_OPTIONS = {
@@ -54,4 +55,20 @@ export function getSelectedModel(): ModelId | null {
 
 export function saveSelectedModel(model: ModelId): void {
   Cookies.set(SELECTED_MODEL_KEY, model, COOKIE_OPTIONS)
+}
+
+// Pro mode functions
+export function getProMode(): boolean {
+  if (typeof window === 'undefined') return false
+
+  try {
+    const stored = Cookies.get(PRO_MODE_KEY)
+    return stored === 'true'
+  } catch {
+    return false
+  }
+}
+
+export function saveProMode(enabled: boolean): void {
+  Cookies.set(PRO_MODE_KEY, enabled ? 'true' : 'false', COOKIE_OPTIONS)
 }

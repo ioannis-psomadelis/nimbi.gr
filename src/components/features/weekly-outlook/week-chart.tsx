@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   AreaChart,
   Area,
@@ -14,7 +15,17 @@ interface WeekChartProps {
   days: NarrativeDay[]
 }
 
+// Fixed colors that work in both display and image capture
+const COLORS = {
+  high: '#f97316', // orange-500
+  low: '#3b82f6',  // blue-500
+  grid: '#374151', // gray-700
+  text: '#9ca3af', // gray-400
+}
+
 export function WeekChart({ days }: WeekChartProps) {
+  const { t } = useTranslation()
+
   const chartData = useMemo(() => {
     return days.map((day) => ({
       name: day.dayOfWeek.slice(0, 3),
@@ -32,14 +43,23 @@ export function WeekChart({ days }: WeekChartProps) {
     if (active && payload && payload.length) {
       const data = payload[0].payload
       return (
-        <div className="bg-foreground text-background rounded-lg px-3 py-2 shadow-lg border-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg">{data.icon}</span>
-            <span className="font-medium">{label}</span>
+        <div
+          style={{
+            backgroundColor: '#f5f5f5',
+            color: '#1a1a1a',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '18px' }}>{data.icon}</span>
+            <span style={{ fontWeight: 500 }}>{label}</span>
           </div>
-          <div className="text-sm">
-            <span className="font-medium">{data.high}&deg;</span>
-            <span className="text-background/70"> / {data.low}&deg;</span>
+          <div style={{ fontSize: '14px' }}>
+            <span style={{ fontWeight: 500, color: COLORS.high }}>{data.high}&deg;</span>
+            <span style={{ color: '#666' }}> / </span>
+            <span style={{ fontWeight: 500, color: COLORS.low }}>{data.low}&deg;</span>
           </div>
         </div>
       )
@@ -57,7 +77,7 @@ export function WeekChart({ days }: WeekChartProps) {
           y={0}
           dy={16}
           textAnchor="middle"
-          className="fill-muted-foreground text-xs"
+          fill={COLORS.text}
           style={{ fontSize: '11px' }}
         >
           {payload.value}
@@ -79,21 +99,21 @@ export function WeekChart({ days }: WeekChartProps) {
           margin={{ top: 10, right: 10, left: -20, bottom: 40 }}
         >
           <defs>
-            {/* High temp gradient - works in both modes */}
+            {/* High temp gradient */}
             <linearGradient id="tempHighGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />
-              <stop offset="95%" stopColor="#f97316" stopOpacity={0.05} />
+              <stop offset="5%" stopColor={COLORS.high} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={COLORS.high} stopOpacity={0.05} />
             </linearGradient>
             {/* Low temp gradient */}
             <linearGradient id="tempLowGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
+              <stop offset="5%" stopColor={COLORS.low} stopOpacity={0.3} />
+              <stop offset="95%" stopColor={COLORS.low} stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
-            className="stroke-border"
+            stroke={COLORS.grid}
             strokeOpacity={0.5}
           />
           <XAxis
@@ -107,8 +127,7 @@ export function WeekChart({ days }: WeekChartProps) {
             domain={[minTemp, maxTemp]}
             axisLine={false}
             tickLine={false}
-            className="text-muted-foreground"
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: COLORS.text }}
             tickFormatter={(value) => `${value}°`}
           />
           <Tooltip content={<CustomTooltip />} cursor={false} />
@@ -116,16 +135,16 @@ export function WeekChart({ days }: WeekChartProps) {
           <Area
             type="monotone"
             dataKey="low"
-            stroke="#3b82f6"
+            stroke={COLORS.low}
             strokeWidth={2}
             fill="url(#tempLowGradient)"
             dot={{
-              fill: '#3b82f6',
+              fill: COLORS.low,
               strokeWidth: 0,
               r: 3,
             }}
             activeDot={{
-              fill: '#3b82f6',
+              fill: COLORS.low,
               strokeWidth: 0,
               r: 5,
             }}
@@ -134,16 +153,16 @@ export function WeekChart({ days }: WeekChartProps) {
           <Area
             type="monotone"
             dataKey="high"
-            stroke="#f97316"
+            stroke={COLORS.high}
             strokeWidth={2}
             fill="url(#tempHighGradient)"
             dot={{
-              fill: '#f97316',
+              fill: COLORS.high,
               strokeWidth: 0,
               r: 4,
             }}
             activeDot={{
-              fill: '#f97316',
+              fill: COLORS.high,
               strokeWidth: 0,
               r: 6,
             }}
@@ -151,14 +170,14 @@ export function WeekChart({ days }: WeekChartProps) {
         </AreaChart>
       </ResponsiveContainer>
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 -mt-2 text-xs text-muted-foreground">
+      <div className="flex items-center justify-center gap-6 -mt-2 text-xs" style={{ color: COLORS.text }}>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 rounded-full bg-[#f97316]" />
-          <span>High</span>
+          <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: COLORS.high }} />
+          <span>{t('tempHigh', 'High')}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 rounded-full bg-[#3b82f6]" />
-          <span>Low</span>
+          <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: COLORS.low }} />
+          <span>{t('tempLow', 'Low')}</span>
         </div>
       </div>
     </div>

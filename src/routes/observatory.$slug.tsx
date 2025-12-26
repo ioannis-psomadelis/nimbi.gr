@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback, Suspense, useRef } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
-import { createFileRoute, Await } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery, HydrationBoundary, dehydrate } from '@tanstack/react-query'
 import { MenuIcon } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
@@ -11,17 +12,19 @@ import { ComparisonChart } from '../components/features/comparison-chart'
 import { SavedLocations } from '../components/features/saved-locations'
 import { RunSelector } from '../components/features/run-selector'
 import { RunImageViewer } from '../components/features/run-image-viewer'
+import { SimpleHero, SimpleForecast } from '../components/features/simple-mode'
 import { MODELS, MODEL_CONFIG, type ModelId } from '../types/models'
 import { getLatestRun, getPreviousRuns, detectRegion } from '../lib/utils/runs'
-import { fetchModelData } from '../lib/api/weather'
+import { allModelsQueryOptions } from '../lib/api/weather'
+import { getQueryClient } from '../lib/query-client'
 import { getLocationBySlug } from '../lib/server/locations'
-import { getServerSavedLocations, getServerSelectedModel } from '../lib/server/storage'
+import { getServerSavedLocations, getServerSelectedModel, getServerProMode } from '../lib/server/storage'
 import { saveSelectedModel } from '../lib/storage'
 import type { WeatherResponse } from '../types/weather'
-import { ModelCardSkeleton, ChartSkeleton } from '../components/skeletons'
 import { WeeklyOutlookWidget, OutlookTrigger } from '../components/features/weekly-outlook'
 import { useWeeklyOutlook } from '../lib/forecast/use-weekly-outlook'
 import { Button } from '../components/ui/button'
+import { ErrorBoundary } from '../components/ui/error-boundary'
 import {
   Sidebar,
   SidebarContent,
@@ -34,9 +37,7 @@ import {
   SidebarHeader,
   useSidebar,
 } from '../components/ui/sidebar'
-
-// Type for deferred model data
-type DeferredModelData = Promise<Record<ModelId, WeatherResponse | null>>
+import i18n from '../lib/i18n'
 
 // Helper to convert country code to flag emoji
 function countryCodeToFlag(countryCode: string): string {
@@ -47,59 +48,67 @@ function countryCodeToFlag(countryCode: string): string {
   return String.fromCodePoint(...codePoints)
 }
 
-// Loader - returns deferred (unawaited) promise for streaming SSR
+// Loader - prefetches data with React Query for optimal caching
 export const Route = createFileRoute('/observatory/$slug')({
   loader: async ({ params }) => {
-    // Get location, saved locations, and selected model from server
-    const [location, savedLocations, savedModel] = await Promise.all([
+    // Get location, saved locations, selected model, and pro mode from server
+    const [location, savedLocations, savedModel, proMode] = await Promise.all([
       getLocationBySlug({ data: params.slug }),
       getServerSavedLocations(),
       getServerSelectedModel(),
+      getServerProMode(),
     ])
 
-    // Return unawaited promise - this enables streaming SSR
-    const modelDataPromise: DeferredModelData = Promise.allSettled(
-      MODELS.map((model) => fetchModelData(model, location.lat, location.lon))
-    ).then((results) => {
-      const modelData: Record<ModelId, WeatherResponse | null> = {} as Record<ModelId, WeatherResponse | null>
-      MODELS.forEach((model, index) => {
-        const result = results[index]
-        modelData[model] = result.status === 'fulfilled' ? result.value : null
-      })
-      return modelData
-    })
+    // Get QueryClient for this request (new instance on server, singleton on client)
+    const queryClient = getQueryClient()
+
+    // Prefetch weather data - React Query will cache it
+    // ensureQueryData only fetches if data is stale or missing
+    await queryClient.ensureQueryData(
+      allModelsQueryOptions(location.lat, location.lon, proMode)
+    )
+
+    // Dehydrate the QueryClient state to transfer to client
+    // This prevents grey screen on first load by hydrating the cache
+    // Use JSON serialization to ensure clean transfer between server/client
+    const dehydratedState = dehydrate(queryClient)
 
     return {
       location,
       savedLocations,
       savedModel,
-      modelDataPromise,
+      proMode,
+      // Serialize/deserialize to ensure clean types for TanStack Router
+      dehydratedState: JSON.parse(JSON.stringify(dehydratedState)),
+    }
+  },
+  head: ({ loaderData }) => {
+    const locationName = loaderData?.location?.name || 'Weather'
+    const title = i18n.t('metaObservatoryTitle', { location: locationName })
+    const description = i18n.t('metaObservatoryDescription', { location: locationName })
+
+    return {
+      meta: [
+        {
+          title,
+        },
+        {
+          name: 'description',
+          content: description,
+        },
+        {
+          property: 'og:title',
+          content: title,
+        },
+        {
+          property: 'og:description',
+          content: description,
+        },
+      ],
     }
   },
   component: ObservatoryPage,
 })
-
-// Skeleton for model cards section
-function ModelCardsSkeleton() {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-      {MODELS.map((model) => (
-        <ModelCardSkeleton key={model} />
-      ))}
-    </div>
-  )
-}
-
-// Skeleton for charts section
-function ChartsSkeleton() {
-  return (
-    <div className="space-y-4">
-      <ChartSkeleton />
-      <ChartSkeleton />
-      <ChartSkeleton />
-    </div>
-  )
-}
 
 // Component that renders model cards with resolved data
 function ModelCardsContent({
@@ -247,12 +256,84 @@ function SidebarOpenTrigger() {
   )
 }
 
+/**
+ * Loading fallback for Suspense boundary
+ * Shows a minimal skeleton while data loads (rare case - usually hydrated from SSR)
+ */
+function ObservatoryLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="h-14 bg-card/95 border-b border-border/50" />
+      <div className="pt-14 p-4 sm:p-6 lg:p-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 w-48 bg-muted rounded-lg" />
+          <div className="h-4 w-32 bg-muted/60 rounded" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-24 bg-muted rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ObservatoryPage() {
+  // Get loader data including dehydrated React Query state
+  const { location, savedLocations, savedModel, proMode, dehydratedState } = Route.useLoaderData()
+  const { lat, lon, name, nameLocal, country } = location
+
+  // Wrap with ErrorBoundary to catch hydration/rendering failures
+  // Wrap with Suspense as fallback for useSuspenseQuery (rarely needed due to SSR hydration)
+  // HydrationBoundary rehydrates the React Query cache from server
+  return (
+    <ErrorBoundary>
+      <HydrationBoundary state={dehydratedState}>
+        <Suspense fallback={<ObservatoryLoadingFallback />}>
+          <ObservatoryContent
+            lat={lat}
+            lon={lon}
+            name={name}
+            nameLocal={nameLocal}
+            country={country}
+            savedLocations={savedLocations}
+            savedModel={savedModel}
+            proMode={proMode}
+          />
+        </Suspense>
+      </HydrationBoundary>
+    </ErrorBoundary>
+  )
+}
+
+// Actual page content - uses useSuspenseQuery which will use hydrated cache
+function ObservatoryContent({
+  lat,
+  lon,
+  name,
+  nameLocal,
+  country,
+  savedLocations,
+  savedModel,
+  proMode,
+}: {
+  lat: number
+  lon: number
+  name: string
+  nameLocal?: string
+  country: string
+  savedLocations: { id: string; name: string; lat: number; lon: number; isDefault: boolean }[]
+  savedModel: ModelId | null
+  proMode: boolean
+}) {
   const { t } = useTranslation()
 
-  // Get deferred loader data
-  const { location, savedLocations, savedModel, modelDataPromise } = Route.useLoaderData()
-  const { lat, lon, name, nameLocal, country } = location
+  // Get weather data from React Query cache (hydrated from server)
+  // No loading/suspense on first load - data is already in cache
+  const { data: modelData } = useSuspenseQuery(
+    allModelsQueryOptions(lat, lon, proMode)
+  )
 
   // Scroll state for sidebar transformation - debounced with RAF
   const [isScrolled, setIsScrolled] = useState(false)
@@ -286,9 +367,122 @@ function ObservatoryPage() {
     saveSelectedModel(model)
   }, [])
 
+  // Simple mode layout - only shows ECMWF HRES data in a clean interface
+  if (!proMode) {
+    return (
+      <>
+        <Header proMode={proMode} />
+        <div className="pt-14 min-h-screen">
+          <SidebarProvider defaultOpen={true}>
+            {/* Sidebar open trigger - shows when closed */}
+            <SidebarOpenTrigger />
+
+            <Sidebar
+              collapsible="offcanvas"
+              className={`
+                will-change-transform transition-all duration-300 ease-out overflow-hidden
+                ${isScrolled
+                  ? 'md:top-[72px] md:left-4 md:rounded-xl md:border md:border-border md:max-h-[calc(100vh-144px)] md:h-auto top-14 bottom-0'
+                  : 'top-14 bottom-0'
+                }
+              `}
+            >
+              {/* Top Header with Toggle */}
+              <SidebarHeader className="flex-row items-center justify-between p-3 border-b border-border">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                  {t('stormObservatory')}
+                </span>
+                <SidebarTrigger className="w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" />
+              </SidebarHeader>
+
+              <SidebarContent className="pt-2">
+                {/* Location Info */}
+                <SidebarGroup>
+                  <SidebarGroupContent>
+                    <div className="relative overflow-hidden rounded-xl bg-muted/50 border border-border p-4">
+                      {/* Decorative Element */}
+                      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary/10 blur-2xl" />
+
+                      <div className="relative">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-lg">{countryCodeToFlag(country)}</span>
+                          <h2 className="text-lg font-semibold text-foreground">
+                            {name}
+                          </h2>
+                        </div>
+                        {nameLocal && (
+                          <p className="text-sm text-muted-foreground mb-1">
+                            {nameLocal}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground font-mono">
+                          {region === 'europe' ? t('europeanRegion') : t('northAmericanRegion')}
+                        </p>
+
+                        {/* Live Indicator */}
+                        <div className="flex items-center gap-1.5 mt-3">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('live')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </SidebarGroupContent>
+                </SidebarGroup>
+
+                {/* Saved Locations */}
+                <SidebarGroup>
+                  <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {t('savedLocations')}
+                  </SidebarGroupLabel>
+                  <SidebarGroupContent>
+                    <SavedLocations currentLat={lat} currentLon={lon} currentName={nameLocal || name} initialLocations={savedLocations} />
+                  </SidebarGroupContent>
+                </SidebarGroup>
+
+                {/* Weekly Outlook in Sidebar */}
+                <SidebarGroup>
+                  <SidebarGroupContent>
+                    <SidebarOutlookTrigger modelData={modelData} location={name} />
+                  </SidebarGroupContent>
+                </SidebarGroup>
+
+              </SidebarContent>
+            </Sidebar>
+
+            <SidebarInset className="bg-background">
+              {/* Main Content - Simple Mode */}
+              <main className="flex-1 overflow-auto">
+                {/* Hero Section with Current Weather */}
+                <section className="relative overflow-hidden border-b border-border">
+                  {/* Subtle Background */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-50" />
+
+                  <div className="relative p-4 sm:p-6 lg:p-8">
+                    {modelData['ecmwf-hres'] && <SimpleHero data={modelData['ecmwf-hres']} />}
+                  </div>
+                </section>
+
+                {/* 7-Day Forecast Section */}
+                <section className="p-4 sm:p-6 lg:p-8">
+                  {modelData['ecmwf-hres'] && <SimpleForecast data={modelData['ecmwf-hres']} />}
+                </section>
+              </main>
+            </SidebarInset>
+          </SidebarProvider>
+        </div>
+
+        {/* Weekly Outlook Widget */}
+        <WeeklyOutlookContent modelData={modelData} location={name} />
+
+        <Footer />
+      </>
+    )
+  }
+
+  // Pro mode layout - full feature set with all models
   return (
     <>
-      <Header />
+      <Header proMode={proMode} />
       <div className="pt-14 min-h-screen">
         <SidebarProvider defaultOpen={true}>
           {/* Sidebar open trigger - shows when closed */}
@@ -352,20 +546,14 @@ function ObservatoryPage() {
                   {t('savedLocations')}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
-                  <SavedLocations currentLat={lat} currentLon={lon} initialLocations={savedLocations} />
+                  <SavedLocations currentLat={lat} currentLon={lon} currentName={nameLocal || name} initialLocations={savedLocations} />
                 </SidebarGroupContent>
               </SidebarGroup>
 
               {/* Weekly Outlook in Sidebar */}
               <SidebarGroup>
                 <SidebarGroupContent>
-                  <Suspense fallback={null}>
-                    <Await promise={modelDataPromise}>
-                      {(modelData) => (
-                        <SidebarOutlookTrigger modelData={modelData} location={name} />
-                      )}
-                    </Await>
-                  </Suspense>
+                  <SidebarOutlookTrigger modelData={modelData} location={name} />
                 </SidebarGroupContent>
               </SidebarGroup>
 
@@ -390,18 +578,12 @@ function ObservatoryPage() {
                 </div>
               </div>
 
-              {/* Model Cards Grid - Responsive with Suspense */}
-              <Suspense fallback={<ModelCardsSkeleton />}>
-                <Await promise={modelDataPromise}>
-                  {(modelData) => (
-                    <ModelCardsContent
-                      modelData={modelData}
-                      selectedModel={selectedModel}
-                      onModelSelect={handleModelSelect}
-                    />
-                  )}
-                </Await>
-              </Suspense>
+              {/* Model Cards Grid */}
+              <ModelCardsContent
+                modelData={modelData}
+                selectedModel={selectedModel}
+                onModelSelect={handleModelSelect}
+              />
             </div>
           </section>
 
@@ -465,11 +647,7 @@ function ObservatoryPage() {
                 </div>
               </div>
 
-              <Suspense fallback={<ChartsSkeleton />}>
-                <Await promise={modelDataPromise}>
-                  {(modelData) => <ChartsContent modelData={modelData} />}
-                </Await>
-              </Suspense>
+              <ChartsContent modelData={modelData} />
             </div>
           </div>
         </main>
@@ -477,13 +655,7 @@ function ObservatoryPage() {
       </SidebarProvider>
       </div>
       {/* Weekly Outlook Widget */}
-      <Suspense fallback={null}>
-        <Await promise={modelDataPromise}>
-          {(modelData) => (
-            <WeeklyOutlookContent modelData={modelData} location={name} />
-          )}
-        </Await>
-      </Suspense>
+      <WeeklyOutlookContent modelData={modelData} location={name} />
 
       <Footer />
     </>

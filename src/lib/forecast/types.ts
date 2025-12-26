@@ -17,10 +17,6 @@ export interface DayForecast {
   pressureTrend: PressureTrend
 }
 
-export interface ModelDayForecast extends DayForecast {
-  modelId: ModelId
-}
-
 export interface DayComparison {
   date: Date
   dayOfWeek: string

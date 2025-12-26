@@ -37,7 +37,7 @@ export function LanguageToggle() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`
-          relative h-9 px-3 rounded-lg
+          relative h-9 px-2 md:px-3 rounded-lg
           bg-muted hover:bg-secondary
           border border-border
           transition-all duration-200
@@ -48,7 +48,9 @@ export function LanguageToggle() {
         aria-label="Select language"
         aria-expanded={isOpen}
       >
-        <span className="text-sm">{currentLang.nativeName}</span>
+        {/* Flag only on mobile, text on desktop */}
+        <span className="text-base md:hidden">{currentLang.flag}</span>
+        <span className="hidden md:inline text-sm">{currentLang.nativeName}</span>
         <svg
           className={`w-3 h-3 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"

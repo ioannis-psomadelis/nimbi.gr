@@ -12,6 +12,7 @@ export interface SavedLocation {
 
 const LOCATIONS_KEY = 'nimbus_locations'
 const SELECTED_MODEL_KEY = 'nimbus_selected_model'
+const PRO_MODE_KEY = 'pro-mode'
 
 // Server-side function to read saved locations from cookie
 export const getServerSavedLocations = createServerFn({ method: 'GET' }).handler(
@@ -39,6 +40,18 @@ export const getServerSelectedModel = createServerFn({ method: 'GET' }).handler(
       return null
     } catch {
       return null
+    }
+  }
+)
+
+// Server-side function to read pro mode from cookie
+export const getServerProMode = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<boolean> => {
+    try {
+      const stored = getCookie(PRO_MODE_KEY)
+      return stored === 'true'
+    } catch {
+      return false
     }
   }
 )
