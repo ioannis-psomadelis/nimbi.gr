@@ -1,0 +1,8 @@
+node_modules
+.output
+.git
+.claude
+.turbo
+*.md
+.env*
+.DS_Store

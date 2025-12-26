@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/router.tsx",
+    "src/routes/**/*.tsx",
+    "src/routeTree.gen.ts"
+  ],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": [
+    "src/routeTree.gen.ts"
+  ],
+  "ignoreDependencies": [
+    "@tailwindcss/vite",
+    "@tanstack/router-plugin",
+    "tailwindcss",
+    "tw-animate-css"
+  ]
+}

@@ -1,0 +1,352 @@
+export const translations = {
+  en: {
+    translation: {
+      // App
+      appName: 'nimbi.gr',
+      weatherObservatory: 'Weather Observatory',
+      stormObservatory: 'Storm Observatory',
+
+      // Header
+      searchPlaceholder: 'Search location...',
+
+      // Location
+      currentLocation: 'Current Location',
+      savedLocations: 'Saved Locations',
+      noSavedLocations: 'No saved locations',
+      saveLocation: 'Save',
+      europeanRegion: 'European Region',
+      northAmericanRegion: 'North American Region',
+
+      // Weather
+      forecast: 'Forecast',
+      forecastFor: 'Forecast for',
+      loading: 'Loading...',
+      updating: 'Updating...',
+      loadingChart: 'Loading chart...',
+      chartNotAvailable: 'Chart not available',
+      chartNotReady: 'This forecast hour may not be ready yet',
+      tryAgain: 'Try again',
+      noChartLoaded: 'No chart loaded',
+      noDataAvailable: 'No data available',
+
+      // Models
+      models: 'Models',
+      gfs: 'GFS',
+      ecmwf: 'ECMWF',
+      gem: 'GEM',
+      ukmo: 'UKMO',
+
+      // Chart Parameters
+      pressure: 'Pressure',
+      pressureDesc: 'Mean Sea Level Pressure & 500hPa Geopotential',
+      pressureInfo: 'Shows surface pressure patterns (highs and lows) combined with the 500hPa geopotential height. This helps identify weather systems, fronts, and the overall atmospheric flow pattern.',
+
+      temp2m: 'Temp 2m',
+      temp2mDesc: 'Temperature at 2 meters',
+      temp2mInfo: 'The forecasted air temperature at 2 meters above ground level - what you would feel outside. This is the standard height for measuring air temperature.',
+
+      temp850: 'Temp 850',
+      temp850Desc: 'Temperature at 850hPa (~1500m altitude)',
+      temp850Info: 'Temperature at the 850hPa pressure level, approximately 1,500 meters above sea level. Useful for tracking air masses and predicting precipitation type.',
+
+      precip: 'Precip',
+      precipDesc: 'Accumulated Precipitation',
+      precipInfo: 'Total precipitation accumulation including rain, snow, sleet, and other forms. Values shown as millimeters of liquid water equivalent.',
+
+      wind: 'Wind',
+      windDesc: 'Wind Speed at 10 meters',
+      windInfo: 'Wind speed and direction at 10 meters above ground level - the standard measurement height for surface winds.',
+
+      jetStream: 'Jet Stream',
+      jetStreamDesc: 'Upper-level Jet Stream',
+      jetStreamInfo: 'The jet stream is a fast-flowing river of air at high altitude. It steers weather systems and separates air masses.',
+
+      // Chart Parameter Labels (CHART_PARAMS)
+      paramPressure: 'Pressure & Heights',
+      paramPressureShort: 'MSLP',
+      paramPressureDesc: 'Mean Sea Level Pressure & 500hPa Geopotential Height',
+      paramPressureInfo: 'Mean Sea Level Pressure (MSLP) shows surface pressure patterns normalized to sea level, displayed as isobars (lines of equal pressure). High pressure (anticyclones) typically brings stable, clear weather, while low pressure (depressions/cyclones) brings unsettled conditions with clouds and precipitation.',
+      paramPressureUsage: 'The 500hPa geopotential height (approximately 5.5km altitude) shows upper-level troughs and ridges that steer surface weather systems. The spacing between isobars indicates wind strength - closer lines mean stronger winds. This chart is essential for understanding the large-scale atmospheric flow.',
+
+      paramTemp2m: 'Surface Temperature',
+      paramTemp2mShort: 'T2m',
+      paramTemp2mDesc: 'Air Temperature at 2 meters above ground',
+      paramTemp2mInfo: 'The forecasted air temperature at 2 meters above ground level - this is the standard meteorological measurement height and represents what you would actually feel outside. It accounts for terrain effects and local conditions.',
+      paramTemp2mUsage: 'Use this to plan daily activities, determine clothing needs, and assess heating/cooling requirements. Temperature gradients (rapid changes over distance) often indicate frontal boundaries where weather changes occur.',
+
+      paramTemp850: 'Temperature at 850hPa',
+      paramTemp850Short: 'T850',
+      paramTemp850Desc: 'Temperature at ~1,500m altitude (850hPa pressure level)',
+      paramTemp850Info: 'Temperature at the 850hPa pressure level, approximately 1,500 meters above sea level. This level is above most terrain effects and is excellent for tracking air masses. The 0°C isotherm at 850hPa is a key indicator for precipitation type.',
+      paramTemp850Usage: 'When 850hPa temperature is below 0°C, precipitation is more likely to fall as snow at lower elevations. Warm air advection (temperatures rising) indicates approaching warm fronts, while cold air advection signals cold front passages. This is the primary level meteorologists use to predict snow vs rain.',
+
+      paramPrecip: 'Precipitation',
+      paramPrecipShort: 'Precip',
+      paramPrecipDesc: 'Total Accumulated Precipitation',
+      paramPrecipInfo: 'Total precipitation accumulation including all forms: rain, drizzle, snow, sleet, freezing rain, and hail. Values are shown in millimeters of liquid water equivalent. For snow, multiply by approximately 10-15 to estimate snow depth.',
+      paramPrecipUsage: 'Use accumulated totals to assess flood risk, water resources, and travel impacts. Light rain is typically 0.1-2.5mm/hour, moderate 2.5-7.5mm/hour, and heavy rain exceeds 7.5mm/hour. Snow accumulation depends on temperature and moisture - cold dry snow has higher ratios (15:1) while wet snow is lower (5:1).',
+
+      paramWind: 'Surface Wind',
+      paramWindShort: 'Wind',
+      paramWindDesc: '10-meter Wind Speed and Direction',
+      paramWindInfo: 'Wind speed and direction at 10 meters above ground level - the World Meteorological Organization standard for surface wind measurements. Wind barbs or arrows show direction (where wind comes FROM), while colors/contours show speed.',
+      paramWindUsage: 'Light breeze: 5-15 km/h, Moderate: 20-40 km/h, Strong: 40-60 km/h, Gale: 60-90 km/h, Storm: >90 km/h. Wind direction shifts clockwise (veering) with warm fronts and counter-clockwise (backing) with cold fronts. Strongest winds occur in the tightest pressure gradients.',
+
+      paramJet: 'Jet Stream',
+      paramJetShort: 'Jet',
+      paramJetDesc: 'Upper-level Jet Stream (250-300hPa)',
+      paramJetInfo: 'The jet stream is a narrow band of very strong winds at 9-12km altitude, typically flowing west to east at speeds of 100-400 km/h. It forms at the boundary between cold polar air and warm tropical air, and its position largely determines surface weather patterns.',
+      paramJetUsage: 'The jet stream steers surface low pressure systems and determines storm tracks. Areas under the jet\'s left exit region often see storm development. Jet streaks (speed maxima) create areas of rising and sinking air that influence clouds and precipitation. Flight times are significantly affected by jet stream position.',
+
+      learnAbout: 'Learn about',
+
+      // Time
+      hours: 'hours',
+      days: 'days',
+
+      // Charts
+      temperature: 'Temperature',
+      precipitation: 'Precipitation',
+      windSpeed: 'Wind Speed',
+      pressureChart: 'Pressure',
+      chartsFrom: 'Charts from',
+
+      // Actions
+      compare: 'Compare',
+      live: 'Live',
+
+      // Language
+      language: 'Language',
+      english: 'English',
+      greek: 'Greek',
+
+      // New keys
+      modelOverview: 'Model Overview',
+      currentTemperatureForecasts: 'Current temperature forecasts',
+      modelComparison: 'Model Comparison',
+      compareAllModelsSideBySide: 'Compare all models side by side',
+      observing: 'Observing',
+      charts: 'Charts',
+      visualization: 'visualization',
+      latest: 'Latest',
+      error: 'Error',
+      runInfoTooltip: 'Model runs are initialized every 6 hours (00z, 06z, 12z, 18z) and become available ~5 hours later.',
+      nextRunAvailable: 'Next run available',
+      runTimingInfo: 'Run timing info',
+      unitedStates: 'United States',
+      removeLocation: 'Remove',
+      location: 'Location',
+      forecastTime: 'Forecast Time',
+      selectRun: 'Select Run',
+      meteocielVisualization: 'Meteociel visualization',
+
+      // Regions
+      region: 'Region',
+      europe: 'Europe',
+      greece: 'Greece',
+      france: 'France',
+      italy: 'Italy',
+      spain: 'Spain',
+      uk: 'United Kingdom',
+      germany: 'Germany',
+
+      // Home page
+      multiModelWeatherObservatory: 'Multi-model weather observatory',
+      useMyLocation: 'Use my location',
+      searchForACity: 'Search for a city...',
+      orExplore: 'or explore',
+      findingYourLocation: 'Finding your location...',
+      locationError: 'Could not detect location. Try searching instead.',
+      locationPermissionDenied: 'Location permission denied. Please use search.',
+      locationUnavailable: 'Location unavailable. Try searching instead.',
+      locationTimeout: 'Location request timed out. Try again or search.',
+      noResultsFound: 'No cities found. Try a different search.',
+
+      // Weekly Outlook
+      weeklyOutlook: 'Weekly Outlook',
+      basedOn: 'Based on',
+      updated: 'Updated',
+      viewForecast: 'View forecast',
+      allModelsAgree: 'All models agree',
+      highConfidence: 'High confidence',
+      moderateConfidence: 'Moderate confidence',
+      lowerConfidence: 'Lower confidence',
+      confidenceExplanation: 'Based on agreement between ECMWF HD, GFS, GEM, and UKMO weather models.',
+    },
+  },
+  el: {
+    translation: {
+      // App
+      appName: 'nimbi.gr',
+      weatherObservatory: 'Μετεωρολογικό Παρατηρητήριο',
+      stormObservatory: 'Μετεωρολογικό Παρατηρητήριο',
+
+      // Header
+      searchPlaceholder: 'Αναζήτηση τοποθεσίας...',
+
+      // Location
+      currentLocation: 'Τρέχουσα Τοποθεσία',
+      savedLocations: 'Αποθηκευμένες Τοποθεσίες',
+      noSavedLocations: 'Δεν υπάρχουν αποθηκευμένες τοποθεσίες',
+      saveLocation: 'Αποθήκευση',
+      europeanRegion: 'Ευρωπαϊκή Περιοχή',
+      northAmericanRegion: 'Βορειοαμερικανική Περιοχή',
+
+      // Weather
+      forecast: 'Πρόγνωση',
+      forecastFor: 'Πρόγνωση για',
+      loading: 'Φόρτωση...',
+      updating: 'Ενημέρωση...',
+      loadingChart: 'Φόρτωση χάρτη...',
+      chartNotAvailable: 'Ο χάρτης δεν είναι διαθέσιμος',
+      chartNotReady: 'Αυτή η ώρα πρόγνωσης μπορεί να μην είναι έτοιμη ακόμα',
+      tryAgain: 'Δοκιμάστε ξανά',
+      noChartLoaded: 'Δεν φορτώθηκε χάρτης',
+      noDataAvailable: 'Δεν υπάρχουν διαθέσιμα δεδομένα',
+
+      // Models
+      models: 'Μοντέλα',
+      gfs: 'GFS',
+      ecmwf: 'ECMWF',
+      gem: 'GEM',
+      ukmo: 'UKMO',
+
+      // Chart Parameters
+      pressure: 'Πίεση',
+      pressureDesc: 'Ατμοσφαιρική Πίεση & Γεωδυναμικό 500hPa',
+      pressureInfo: 'Δείχνει τα πρότυπα επιφανειακής πίεσης (υψηλά και χαμηλά) σε συνδυασμό με το γεωδυναμικό ύψος 500hPa. Βοηθά στον εντοπισμό καιρικών συστημάτων και μετώπων.',
+
+      temp2m: 'Θερμ. 2μ',
+      temp2mDesc: 'Θερμοκρασία στα 2 μέτρα',
+      temp2mInfo: 'Η προβλεπόμενη θερμοκρασία αέρα στα 2 μέτρα πάνω από το έδαφος - αυτό που θα αισθανόσασταν έξω.',
+
+      temp850: 'Θερμ. 850',
+      temp850Desc: 'Θερμοκρασία στα 850hPa (~1500μ υψόμετρο)',
+      temp850Info: 'Θερμοκρασία στο επίπεδο πίεσης 850hPa, περίπου 1.500 μέτρα πάνω από τη θάλασσα. Χρήσιμη για την παρακολούθηση αέριων μαζών.',
+
+      precip: 'Βροχή',
+      precipDesc: 'Συσσωρευμένες Βροχοπτώσεις',
+      precipInfo: 'Συνολική συσσώρευση βροχοπτώσεων συμπεριλαμβανομένων βροχής, χιονιού και άλλων μορφών.',
+
+      wind: 'Άνεμος',
+      windDesc: 'Ταχύτητα Ανέμου στα 10 μέτρα',
+      windInfo: 'Ταχύτητα και κατεύθυνση ανέμου στα 10 μέτρα πάνω από το έδαφος - το τυπικό ύψος μέτρησης για επιφανειακούς ανέμους.',
+
+      jetStream: 'Αεροχείμαρρος',
+      jetStreamDesc: 'Αεροχείμαρρος Ανωτέρων Στρωμάτων',
+      jetStreamInfo: 'Ο αεροχείμαρρος είναι ένα ταχύτατο ρεύμα αέρα σε μεγάλο υψόμετρο. Κατευθύνει τα καιρικά συστήματα και διαχωρίζει τις αέριες μάζες.',
+
+      // Chart Parameter Labels (CHART_PARAMS)
+      paramPressure: 'Πίεση & Ύψη',
+      paramPressureShort: 'MSLP',
+      paramPressureDesc: 'Ατμοσφαιρική Πίεση Επιφανείας & Γεωδυναμικό Ύψος 500hPa',
+      paramPressureInfo: 'Η Μέση Πίεση Θαλάσσιας Επιφάνειας (MSLP) εμφανίζει τα πρότυπα επιφανειακής πίεσης κανονικοποιημένα στο επίπεδο της θάλασσας, με ισοβαρείς καμπύλες (γραμμές ίσης πίεσης). Η υψηλή πίεση (αντικυκλώνες) φέρνει συνήθως σταθερό, αίθριο καιρό, ενώ η χαμηλή πίεση (ύφεση/κυκλώνες) φέρνει ασταθείς συνθήκες με νέφη και βροχοπτώσεις.',
+      paramPressureUsage: 'Το γεωδυναμικό ύψος 500hPa (περίπου 5.5km υψόμετρο) δείχνει τα τρούφ και τις ράχες των ανωτέρων στρωμάτων που κατευθύνουν τα επιφανειακά καιρικά συστήματα. Η απόσταση μεταξύ των ισοβαρών δείχνει την ένταση του ανέμου - πιο κοντινές γραμμές σημαίνουν ισχυρότερους ανέμους. Αυτός ο χάρτης είναι απαραίτητος για την κατανόηση της μεγάλης κλίμακας ατμοσφαιρικής ροής.',
+
+      paramTemp2m: 'Θερμοκρασία Επιφ.',
+      paramTemp2mShort: 'Θ2μ',
+      paramTemp2mDesc: 'Θερμοκρασία Αέρα στα 2 μέτρα από το έδαφος',
+      paramTemp2mInfo: 'Η προβλεπόμενη θερμοκρασία αέρα στα 2 μέτρα πάνω από το έδαφος - αυτό είναι το τυπικό μετεωρολογικό ύψος μέτρησης και αντιπροσωπεύει αυτό που πραγματικά θα αισθανόσασταν έξω. Λαμβάνει υπόψη τις επιδράσεις του εδάφους και τις τοπικές συνθήκες.',
+      paramTemp2mUsage: 'Χρησιμοποιήστε το για σχεδιασμό καθημερινών δραστηριοτήτων, επιλογή ρουχισμού και εκτίμηση αναγκών θέρμανσης/ψύξης. Οι θερμοκρασιακές διαβαθμίσεις (ραγδαίες αλλαγές σε απόσταση) συχνά υποδεικνύουν μετωπικά όρια όπου αλλάζει ο καιρός.',
+
+      paramTemp850: 'Θερμοκρασία 850hPa',
+      paramTemp850Short: 'Θ850',
+      paramTemp850Desc: 'Θερμοκρασία στο επίπεδο ~1.500μ (850hPa)',
+      paramTemp850Info: 'Θερμοκρασία στο επίπεδο πίεσης 850hPa, περίπου 1.500 μέτρα πάνω από τη θάλασσα. Αυτό το επίπεδο είναι πάνω από τις περισσότερες εδαφικές επιδράσεις και είναι εξαιρετικό για την παρακολούθηση αέριων μαζών. Η ισόθερμη 0°C στα 850hPa είναι βασικός δείκτης για τον τύπο υετού.',
+      paramTemp850Usage: 'Όταν η θερμοκρασία 850hPa είναι κάτω από 0°C, ο υετός είναι πιθανότερο να πέσει ως χιόνι σε χαμηλότερα υψόμετρα. Η μεταφορά θερμού αέρα (αυξανόμενες θερμοκρασίες) υποδεικνύει προσεγγίζοντα θερμά μέτωπα, ενώ η μεταφορά ψυχρού αέρα σηματοδοτεί διέλευση ψυχρών μετώπων. Αυτό είναι το κύριο επίπεδο που χρησιμοποιούν οι μετεωρολόγοι για πρόβλεψη χιονιού έναντι βροχής.',
+
+      paramPrecip: 'Υετός',
+      paramPrecipShort: 'Υετός',
+      paramPrecipDesc: 'Συνολικός Αθροιστικός Υετός',
+      paramPrecipInfo: 'Συνολική συσσώρευση υετού που περιλαμβάνει όλες τις μορφές: βροχή, ψιχάλα, χιόνι, χιονόνερο, παγωμένη βροχή και χαλάζι. Οι τιμές εμφανίζονται σε χιλιοστά ισοδύναμου νερού. Για χιόνι, πολλαπλασιάστε περίπου επί 10-15 για εκτίμηση του ύψους χιονιού.',
+      paramPrecipUsage: 'Χρησιμοποιήστε τα αθροιστικά σύνολα για αξιολόγηση κινδύνου πλημμύρας, υδάτινων πόρων και επιπτώσεων στις μετακινήσεις. Ελαφριά βροχή: 0.1-2.5mm/ώρα, μέτρια: 2.5-7.5mm/ώρα, έντονη: >7.5mm/ώρα. Η συσσώρευση χιονιού εξαρτάται από τη θερμοκρασία και την υγρασία - το κρύο ξηρό χιόνι έχει υψηλότερες αναλογίες (15:1) ενώ το υγρό χιόνι χαμηλότερες (5:1).',
+
+      paramWind: 'Επιφανειακός Άνεμος',
+      paramWindShort: 'Άνεμος',
+      paramWindDesc: 'Ταχύτητα και Κατεύθυνση Ανέμου στα 10 μέτρα',
+      paramWindInfo: 'Ταχύτητα και κατεύθυνση ανέμου στα 10 μέτρα πάνω από το έδαφος - το πρότυπο του Παγκόσμιου Μετεωρολογικού Οργανισμού για μετρήσεις επιφανειακού ανέμου. Τα βέλη δείχνουν την κατεύθυνση (ΑΠΟΠΟΥ φυσάει ο άνεμος), ενώ τα χρώματα/ισόγραμμες δείχνουν την ταχύτητα.',
+      paramWindUsage: 'Ελαφρύ αεράκι: 5-15 km/h, Μέτριος: 20-40 km/h, Ισχυρός: 40-60 km/h, Θυελλώδης: 60-90 km/h, Καταιγίδα: >90 km/h. Η κατεύθυνση του ανέμου στρέφεται δεξιόστροφα με θερμά μέτωπα και αριστερόστροφα με ψυχρά μέτωπα. Οι ισχυρότεροι άνεμοι εμφανίζονται στις στενότερες βαρομετρικές διαβαθμίσεις.',
+
+      paramJet: 'Αεροχείμαρρος',
+      paramJetShort: 'Jet',
+      paramJetDesc: 'Αεροχείμαρρος Ανωτέρων Στρωμάτων (250-300hPa)',
+      paramJetInfo: 'Ο αεροχείμαρρος είναι μια στενή ζώνη πολύ ισχυρών ανέμων σε ύψος 9-12km, που ρέει τυπικά από δυτικά προς ανατολικά με ταχύτητες 100-400 km/h. Σχηματίζεται στο όριο μεταξύ ψυχρού πολικού αέρα και θερμού τροπικού αέρα, και η θέση του καθορίζει σε μεγάλο βαθμό τα επιφανειακά καιρικά πρότυπα.',
+      paramJetUsage: 'Ο αεροχείμαρρος κατευθύνει τα επιφανειακά συστήματα χαμηλής πίεσης και καθορίζει τις διαδρομές των καταιγίδων. Περιοχές κάτω από την αριστερή έξοδο του jet συχνά βλέπουν ανάπτυξη καταιγίδων. Τα jet streaks (μέγιστα ταχύτητας) δημιουργούν περιοχές ανόδου και καθόδου αέρα που επηρεάζουν τα νέφη και τον υετό. Οι χρόνοι πτήσης επηρεάζονται σημαντικά από τη θέση του αεροχείμαρρου.',
+
+      learnAbout: 'Μάθετε για',
+
+      // Time
+      hours: 'ώρες',
+      days: 'ημέρες',
+
+      // Charts
+      temperature: 'Θερμοκρασία',
+      precipitation: 'Βροχόπτωση',
+      windSpeed: 'Ταχύτητα Ανέμου',
+      pressureChart: 'Πίεση',
+      chartsFrom: 'Χάρτες από',
+
+      // Actions
+      compare: 'Σύγκριση',
+      live: 'Ζωντανά',
+
+      // Language
+      language: 'Γλώσσα',
+      english: 'Αγγλικά',
+      greek: 'Ελληνικά',
+
+      // New keys
+      modelOverview: 'Επισκόπηση Μοντέλων',
+      currentTemperatureForecasts: 'Τρέχουσες θερμοκρασιακές προβλέψεις',
+      modelComparison: 'Σύγκριση Μοντέλων',
+      compareAllModelsSideBySide: 'Σύγκριση όλων των μοντέλων',
+      observing: 'Παρατήρηση',
+      charts: 'Χάρτες',
+      visualization: 'απεικόνιση',
+      latest: 'Πιο πρόσφατο',
+      error: 'Σφάλμα',
+      runInfoTooltip: 'Τα μοντέλα εκτελούνται κάθε 6 ώρες (00z, 06z, 12z, 18z) και διατίθενται ~5 ώρες αργότερα.',
+      nextRunAvailable: 'Επόμενη εκτέλεση',
+      runTimingInfo: 'Πληροφορίες χρονισμού εκτέλεσης',
+      unitedStates: 'Ηνωμένες Πολιτείες',
+      removeLocation: 'Αφαίρεση',
+      location: 'Τοποθεσία',
+      forecastTime: 'Χρόνος Πρόγνωσης',
+      selectRun: 'Επιλογή Εκτέλεσης',
+      meteocielVisualization: 'Απεικόνιση Meteociel',
+
+      // Regions
+      region: 'Περιοχή',
+      europe: 'Ευρώπη',
+      greece: 'Ελλάδα',
+      france: 'Γαλλία',
+      italy: 'Ιταλία',
+      spain: 'Ισπανία',
+      uk: 'Ηνωμένο Βασίλειο',
+      germany: 'Γερμανία',
+
+      // Home page
+      multiModelWeatherObservatory: 'Μετεωρολογικό παρατηρητήριο πολλαπλών μοντέλων',
+      useMyLocation: 'Χρήση τοποθεσίας μου',
+      searchForACity: 'Αναζήτηση πόλης...',
+      orExplore: 'ή εξερευνήστε',
+      findingYourLocation: 'Εντοπισμός τοποθεσίας...',
+      locationError: 'Δεν ήταν δυνατός ο εντοπισμός. Δοκιμάστε αναζήτηση.',
+      locationPermissionDenied: 'Η πρόσβαση τοποθεσίας απορρίφθηκε. Χρησιμοποιήστε αναζήτηση.',
+      locationUnavailable: 'Η τοποθεσία δεν είναι διαθέσιμη. Δοκιμάστε αναζήτηση.',
+      locationTimeout: 'Λήξη χρόνου αναμονής. Δοκιμάστε ξανά ή αναζητήστε.',
+      noResultsFound: 'Δεν βρέθηκαν πόλεις. Δοκιμάστε διαφορετική αναζήτηση.',
+
+      // Weekly Outlook
+      weeklyOutlook: 'Εβδομαδιαία Πρόβλεψη',
+      basedOn: 'Βασισμένο στο',
+      updated: 'Ενημερώθηκε',
+      viewForecast: 'Δείτε πρόβλεψη',
+      allModelsAgree: 'Όλα τα μοντέλα συμφωνούν',
+      highConfidence: 'Υψηλή αξιοπιστία',
+      moderateConfidence: 'Μέτρια αξιοπιστία',
+      lowerConfidence: 'Χαμηλότερη αξιοπιστία',
+      confidenceExplanation: 'Βασίζεται στη συμφωνία μεταξύ των μοντέλων ECMWF HD, GFS, GEM και UKMO.',
+    },
+  },
+}
