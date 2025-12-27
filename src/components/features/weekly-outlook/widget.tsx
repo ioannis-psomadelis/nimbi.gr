@@ -13,6 +13,7 @@ interface WeeklyOutlookWidgetProps {
 export function WeeklyOutlookWidget({ narrative, isLoading }: WeeklyOutlookWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
+  const [isFooterVisible, setIsFooterVisible] = useState(false)
   const { t } = useTranslation()
   const isMobile = useIsMobile()
 
@@ -24,6 +25,24 @@ export function WeeklyOutlookWidget({ narrative, isLoading }: WeeklyOutlookWidge
     }
   }, [narrative, isLoading])
 
+  // Hide sticky bar when footer is visible (mobile only)
+  useEffect(() => {
+    if (!isMobile) return
+
+    const footer = document.querySelector('footer')
+    if (!footer) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsFooterVisible(entry.isIntersecting)
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(footer)
+    return () => observer.disconnect()
+  }, [isMobile])
+
   if (!narrative && !isLoading) return null
 
   // Get teaser info
@@ -32,16 +51,18 @@ export function WeeklyOutlookWidget({ narrative, isLoading }: WeeklyOutlookWidge
     (d, i) => i > 0 && d.icon !== today?.icon
   )
 
-  // Mobile: Sticky bottom bar
+  // Mobile: Sticky bottom bar - hides when footer is visible
   if (isMobile) {
+    const shouldShow = isVisible && !isFooterVisible
+
     return (
       <>
         <div
           className={`
             fixed bottom-0 left-0 right-0 z-50
             bg-card/95 backdrop-blur-lg border-t border-border
-            transition-all duration-500 ease-out
-            ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}
+            transition-all duration-300 ease-out
+            ${shouldShow ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}
           `}
         >
           <button
@@ -85,7 +106,7 @@ export function WeeklyOutlookWidget({ narrative, isLoading }: WeeklyOutlookWidge
         </div>
 
         {/* Spacer to prevent content from being hidden behind sticky bar */}
-        <div className={`h-16 ${isVisible ? 'block' : 'hidden'}`} />
+        <div className={`h-16 ${shouldShow ? 'block' : 'hidden'}`} />
 
         {narrative && (
           <OutlookModal
