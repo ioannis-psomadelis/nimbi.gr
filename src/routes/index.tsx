@@ -9,6 +9,7 @@ import { SearchModal } from '@/components/features/search-modal'
 import { getAllLocations, createLocationFromCoords } from '../lib/server/locations'
 import i18n from '../lib/i18n'
 import { CLOUD_PATH } from '../components/ui/logo'
+import { trackEvent } from '../lib/posthog'
 
 export const Route = createFileRoute('/')({
   loader: async () => {
@@ -149,8 +150,10 @@ function HomePage() {
         })
       })
 
+      trackEvent('geolocation_used', { success: true })
       await navigateToObservatory(position.coords.latitude, position.coords.longitude)
     } catch (error) {
+      trackEvent('geolocation_used', { success: false })
       const geoError = error as GeolocationPositionError
       let errorMessage = t('locationError')
 

@@ -21,6 +21,7 @@ import { searchLocationsWithLang, type GeocodeResult } from '@/lib/server/geocod
 import { useDebounce } from '@/lib/utils/debounce'
 import { useLocationsStore, type RecentSearch } from '@/stores'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { trackEvent } from '@/lib/posthog'
 
 interface SearchModalProps {
   /** Trigger style variant */
@@ -90,6 +91,7 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
 
     const search = async () => {
       setIsLoading(true)
+      trackEvent('location_search', { query: trimmed })
       try {
         const searchResults = await searchLocationsWithLang({
           data: { query: trimmed, language: i18n.language }
@@ -119,6 +121,7 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
         admin1: result.admin1,
       })
       const { slug } = await createLocationFromCoords({ data: { lat: result.lat, lon: result.lon } })
+      trackEvent('location_selected', { slug, source: 'search' })
       await navigate({ to: '/observatory/$slug', params: { slug } })
       // Close modal after successful navigation
       setIsSearchOpen(false)
@@ -140,6 +143,7 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
         admin1: search.admin1,
       })
       const { slug } = await createLocationFromCoords({ data: { lat: search.lat, lon: search.lon } })
+      trackEvent('location_selected', { slug, source: 'recent' })
       await navigate({ to: '/observatory/$slug', params: { slug } })
       setIsSearchOpen(false)
     } catch (error) {

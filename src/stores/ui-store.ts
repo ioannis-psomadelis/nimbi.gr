@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { trackEvent } from '../lib/posthog'
 
 interface UIState {
   // Sidebar
@@ -34,7 +35,10 @@ export const useUIStore = create<UIState>()((set) => ({
 
   // Modal actions
   setWeeklyOutlookOpen: (weeklyOutlookOpen) => set({ weeklyOutlookOpen }),
-  openWeeklyOutlook: () => set({ weeklyOutlookOpen: true }),
+  openWeeklyOutlook: () => {
+    trackEvent('weekly_outlook_opened', {})
+    set({ weeklyOutlookOpen: true })
+  },
   closeWeeklyOutlook: () => set({ weeklyOutlookOpen: false }),
 }))
 

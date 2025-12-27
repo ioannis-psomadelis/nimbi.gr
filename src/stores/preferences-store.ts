@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useShallow } from 'zustand/react/shallow'
 import { cookieStorage } from './storage'
+import { trackEvent } from '../lib/posthog'
 
 export type Theme = 'light' | 'dark' | 'system'
 export type ResolvedTheme = 'light' | 'dark'
@@ -57,8 +58,15 @@ export const usePreferencesStore = create<PreferencesState>()(
       },
 
       setLanguage: (language) => set({ language }),
-      setProMode: (proMode) => set({ proMode }),
-      toggleProMode: () => set((s) => ({ proMode: !s.proMode })),
+      setProMode: (proMode) => {
+        trackEvent('pro_mode_toggled', { enabled: proMode })
+        set({ proMode })
+      },
+      toggleProMode: () => {
+        const newProMode = !usePreferencesStore.getState().proMode
+        trackEvent('pro_mode_toggled', { enabled: newProMode })
+        set({ proMode: newProMode })
+      },
     }),
     {
       name: 'preferences',

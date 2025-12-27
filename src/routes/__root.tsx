@@ -9,6 +9,7 @@ import { useThemeEffect } from '../hooks/use-theme-effect'
 import i18n, { syncLanguageFromStorage } from '../lib/i18n'
 import { getServerLanguage } from '../lib/server/language'
 import { NavigationLoader } from '../components/layout/navigation-loader'
+import { PostHogProvider } from '../components/providers/posthog-provider'
 import { getQueryClient } from '../lib/query-client'
 
 import appCss from '../styles.css?url'
@@ -329,9 +330,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <I18nextProvider i18n={i18n}>
           <ThemeApplier>
             <NavigationLoader />
-            <QueryClientProvider client={queryClient}>
-              {children}
-              <TanStackDevtools
+            <PostHogProvider>
+              <QueryClientProvider client={queryClient}>
+                {children}
+                <TanStackDevtools
               config={{
                 position: 'bottom-right',
               }}
@@ -341,8 +343,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                   render: <TanStackRouterDevtoolsPanel />,
                 },
                 ]}
-              />
-            </QueryClientProvider>
+                />
+              </QueryClientProvider>
+            </PostHogProvider>
           </ThemeApplier>
         </I18nextProvider>
         <Scripts />

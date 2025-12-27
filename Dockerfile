@@ -15,6 +15,14 @@ RUN pnpm install --frozen-lockfile
 # Copy source files
 COPY . .
 
+# Build arguments for Vite (must be available at build time)
+ARG VITE_PUBLIC_POSTHOG_KEY
+ARG VITE_PUBLIC_POSTHOG_HOST
+
+# Set as env vars for the build step
+ENV VITE_PUBLIC_POSTHOG_KEY=$VITE_PUBLIC_POSTHOG_KEY
+ENV VITE_PUBLIC_POSTHOG_HOST=$VITE_PUBLIC_POSTHOG_HOST
+
 # Build the app
 RUN pnpm build
 

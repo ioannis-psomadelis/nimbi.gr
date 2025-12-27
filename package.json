@@ -28,6 +28,7 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.561.0",
     "nitro": "latest",
+    "posthog-js": "^1.310.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-i18next": "^16.5.0",

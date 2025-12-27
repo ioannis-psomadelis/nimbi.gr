@@ -2,6 +2,11 @@
 builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
+# Pass service variables as build arguments for Vite
+[build.args]
+VITE_PUBLIC_POSTHOG_KEY = "${{VITE_PUBLIC_POSTHOG_KEY}}"
+VITE_PUBLIC_POSTHOG_HOST = "${{VITE_PUBLIC_POSTHOG_HOST}}"
+
 [deploy]
 healthcheckPath = "/"
 healthcheckTimeout = 300

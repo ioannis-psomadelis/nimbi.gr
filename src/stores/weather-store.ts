@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { cookieStorage } from './storage'
+import { trackEvent } from '../lib/posthog'
 import type { ModelId } from '../types/models'
 
 export type Region = 'europe' | 'greece' | 'atlantic'
@@ -43,8 +44,17 @@ export const useWeatherStore = create<WeatherState>()(
       forecastHour: 0,
 
       // Actions
-      setSelectedModel: (selectedModel) => set({ selectedModel }),
-      setSelectedRun: (selectedRun) => set({ selectedRun }),
+      setSelectedModel: (selectedModel) => {
+        const previousModel = useWeatherStore.getState().selectedModel
+        trackEvent('model_changed', { model: selectedModel, previousModel })
+        set({ selectedModel })
+      },
+      setSelectedRun: (selectedRun) => {
+        if (selectedRun) {
+          trackEvent('run_changed', { run: selectedRun.id })
+        }
+        set({ selectedRun })
+      },
       setSelectedRegion: (selectedRegion) => set({ selectedRegion }),
       setSelectedParam: (selectedParam) => set({ selectedParam }),
       setForecastHour: (forecastHour) => set({ forecastHour }),
