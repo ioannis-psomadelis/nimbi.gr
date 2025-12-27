@@ -87,8 +87,10 @@ export const Route = createFileRoute('/observatory/$slug')({
   },
   head: ({ loaderData }) => {
     const locationName = loaderData?.location?.name || 'Weather'
+    const slug = loaderData?.location?.slug || ''
     const title = i18n.t('metaObservatoryTitle', { location: locationName })
     const description = i18n.t('metaObservatoryDescription', { location: locationName })
+    const url = `https://nimbi.gr/observatory/${slug}`
 
     return {
       meta: [
@@ -106,6 +108,24 @@ export const Route = createFileRoute('/observatory/$slug')({
         {
           property: 'og:description',
           content: description,
+        },
+        {
+          property: 'og:url',
+          content: url,
+        },
+        {
+          name: 'twitter:title',
+          content: title,
+        },
+        {
+          name: 'twitter:description',
+          content: description,
+        },
+      ],
+      links: [
+        {
+          rel: 'canonical',
+          href: url,
         },
       ],
     }
@@ -427,7 +447,7 @@ function ObservatoryContent({
   if (!proMode) {
     return (
       <SidebarProvider defaultOpen={true}>
-        <Sidebar collapsible="offcanvas" className="!top-14">
+        <Sidebar collapsible="offcanvas" className="!top-14 !h-[calc(100svh-3.5rem)]">
           {/* Top Header with Toggle */}
           <SidebarHeader className="flex-row items-center justify-between p-3 border-b border-border">
             <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
@@ -542,7 +562,7 @@ function ObservatoryContent({
   // Pro mode layout - full feature set with all models
   return (
     <SidebarProvider defaultOpen={true}>
-      <Sidebar collapsible="offcanvas" className="!top-14">
+      <Sidebar collapsible="offcanvas" className="!top-14 !h-[calc(100svh-3.5rem)]">
         {/* Top Header with Toggle */}
         <SidebarHeader className="flex-row items-center justify-between p-3 border-b border-border">
           <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">

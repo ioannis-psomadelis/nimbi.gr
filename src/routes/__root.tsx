@@ -165,6 +165,14 @@ export const Route = createRootRoute({
         name: 'twitter:card',
         content: 'summary_large_image',
       },
+      {
+        name: 'twitter:image',
+        content: 'https://nimbi.gr/og-image.png',
+      },
+      {
+        name: 'twitter:site',
+        content: '@nimbi_gr',
+      },
     ],
     links: [
       {
@@ -196,6 +204,64 @@ export const Route = createRootRoute({
       {
         rel: 'manifest',
         href: '/manifest.json',
+      },
+      // Hreflang for language variants
+      {
+        rel: 'alternate',
+        hrefLang: 'en',
+        href: 'https://nimbi.gr/',
+      },
+      {
+        rel: 'alternate',
+        hrefLang: 'el',
+        href: 'https://nimbi.gr/',
+      },
+      {
+        rel: 'alternate',
+        hrefLang: 'x-default',
+        href: 'https://nimbi.gr/',
+      },
+    ],
+    scripts: [
+      {
+        type: 'application/ld+json',
+        children: JSON.stringify({
+          '@context': 'https://schema.org',
+          '@graph': [
+            {
+              '@type': 'Organization',
+              '@id': 'https://nimbi.gr/#organization',
+              name: 'nimbi.gr',
+              url: 'https://nimbi.gr',
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://nimbi.gr/icon-512x512.png',
+                width: 512,
+                height: 512,
+              },
+              sameAs: [],
+            },
+            {
+              '@type': 'WebSite',
+              '@id': 'https://nimbi.gr/#website',
+              url: 'https://nimbi.gr',
+              name: 'nimbi.gr - Weather Observatory',
+              description: 'Multi-model weather forecasts comparing ECMWF, GFS, GEM & UKMO models for Greece and Europe',
+              publisher: {
+                '@id': 'https://nimbi.gr/#organization',
+              },
+              inLanguage: ['en', 'el'],
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate: 'https://nimbi.gr/?q={search_term_string}',
+                },
+                'query-input': 'required name=search_term_string',
+              },
+            },
+          ],
+        }),
       },
     ],
   }),

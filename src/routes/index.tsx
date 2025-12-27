@@ -37,6 +37,20 @@ export const Route = createFileRoute('/')({
         property: 'og:url',
         content: 'https://nimbi.gr/',
       },
+      {
+        name: 'twitter:title',
+        content: i18n.t('metaHomeTitle'),
+      },
+      {
+        name: 'twitter:description',
+        content: i18n.t('metaHomeDescription'),
+      },
+    ],
+    links: [
+      {
+        rel: 'canonical',
+        href: 'https://nimbi.gr/',
+      },
     ],
   }),
   component: HomePage,
