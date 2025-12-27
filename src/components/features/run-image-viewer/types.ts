@@ -4,6 +4,8 @@ import type { ChartParamId } from '../../../lib/utils/runs'
 // Model-specific hour step configuration
 export const MODEL_HOUR_CONFIG: Record<ModelId, { step: number; min: number; max: number }> = {
   'ecmwf-hres': { step: 6, min: 6, max: 240 },
+  icon: { step: 3, min: 3, max: 180 },      // ICON runs up to 180h, 3h steps
+  arpege: { step: 3, min: 3, max: 102 },    // ARPEGE runs up to 102h, 3h steps
   gfs: { step: 6, min: 6, max: 240 },
   gem: { step: 6, min: 6, max: 240 },
   ukmo: { step: 6, min: 6, max: 144 },

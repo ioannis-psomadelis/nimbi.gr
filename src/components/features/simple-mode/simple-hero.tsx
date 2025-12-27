@@ -75,7 +75,11 @@ function getCurrentHourIndex(times: string[]): number {
 function getTodayHighLow(data: WeatherResponse, currentIdx: number): { high: number; low: number } {
   // Get remaining hours of today (up to 24 hours from current)
   const endIdx = Math.min(currentIdx + 24, data.hourly.temperature_2m.length)
-  const todayTemps = data.hourly.temperature_2m.slice(currentIdx, endIdx)
+  const todayTemps = data.hourly.temperature_2m.slice(currentIdx, endIdx).filter((t): t is number => t !== null)
+
+  if (todayTemps.length === 0) {
+    return { high: 0, low: 0 }
+  }
 
   return {
     high: Math.round(Math.max(...todayTemps)),
@@ -87,7 +91,8 @@ function getTodayHighLow(data: WeatherResponse, currentIdx: number): { high: num
  * Get precipitation summary for next 24 hours
  */
 function getPrecipSummary(data: WeatherResponse, currentIdx: number) {
-  const next24 = data.hourly.precipitation.slice(currentIdx, currentIdx + 24)
+  const next24Raw = data.hourly.precipitation.slice(currentIdx, currentIdx + 24)
+  const next24 = next24Raw.filter((p): p is number => p !== null)
   const next24Prob = data.hourly.precipitation_probability?.slice(currentIdx, currentIdx + 24) ?? []
   const total = next24.reduce((a, b) => a + b, 0)
   const rainyHours = next24.filter(p => p > 0.1).length
@@ -148,9 +153,9 @@ function getHourlyPreview(data: WeatherResponse, currentIdx: number, count: numb
     if (idx >= data.hourly.time.length) break
 
     const time = new Date(data.hourly.time[idx])
-    const temp = data.hourly.temperature_2m[idx]
-    const cloud = data.hourly.cloud_cover[idx]
-    const precip = data.hourly.precipitation[idx]
+    const temp = data.hourly.temperature_2m[idx] ?? 0
+    const cloud = data.hourly.cloud_cover[idx] ?? 0
+    const precip = data.hourly.precipitation[idx] ?? 0
     const weatherCode = data.hourly.weather_code?.[idx] ?? undefined
     const condition = getCurrentCondition(cloud, precip, temp, weatherCode)
 
@@ -186,18 +191,18 @@ export const SimpleHero = memo(function SimpleHero({ data }: SimpleHeroProps) {
 
   const currentWeather = useMemo(() => {
     const idx = getCurrentHourIndex(data.hourly.time)
-    const temp = data.hourly.temperature_2m[idx]
-    const cloudCover = data.hourly.cloud_cover[idx]
-    const precip = data.hourly.precipitation[idx]
-    const windSpeed = data.hourly.wind_speed_10m[idx]
-    const pressure = data.hourly.pressure_msl[idx]
+    const temp = data.hourly.temperature_2m[idx] ?? 0
+    const cloudCover = data.hourly.cloud_cover[idx] ?? 0
+    const precip = data.hourly.precipitation[idx] ?? 0
+    const windSpeed = data.hourly.wind_speed_10m[idx] ?? 0
+    const pressure = data.hourly.pressure_msl[idx] ?? 1013
     const apparentTemp = data.hourly.apparent_temperature?.[idx] ?? undefined
     const weatherCode = data.hourly.weather_code?.[idx] ?? undefined
     const uvIndex = data.hourly.uv_index?.[idx] ?? 0
     const precipProb = data.hourly.precipitation_probability?.[idx] ?? 0
     const estimatedHumidity = Math.min(95, 30 + cloudCover * 0.5)
     const condition = getCurrentCondition(cloudCover, precip, temp, weatherCode)
-    const feelsLike = calculateFeelsLike(temp, windSpeed, estimatedHumidity, apparentTemp)
+    const feelsLike = calculateFeelsLike(temp, windSpeed, estimatedHumidity, apparentTemp ?? undefined)
     const { high, low } = getTodayHighLow(data, idx)
     const hourlyPreview = getHourlyPreview(data, idx, 6)
     const precipSummary = getPrecipSummary(data, idx)

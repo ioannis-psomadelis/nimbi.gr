@@ -5,7 +5,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { I18nextProvider, useTranslation } from 'react-i18next'
 
 import { useEffect, useLayoutEffect } from 'react'
-import { ThemeProvider } from '../hooks/use-theme'
+import { useThemeEffect } from '../hooks/use-theme-effect'
 import i18n, { syncLanguageFromStorage } from '../lib/i18n'
 import { getServerLanguage } from '../lib/server/language'
 import { NavigationLoader } from '../components/layout/navigation-loader'
@@ -13,15 +13,29 @@ import { getQueryClient } from '../lib/query-client'
 
 import appCss from '../styles.css?url'
 
-// Script to prevent flash of wrong theme
+// Script to prevent flash of wrong theme - reads from nimbi-store cookie
 const themeScript = `
   (function() {
-    const stored = localStorage.getItem('nimbi-theme');
-    const theme = stored === 'light' || stored === 'dark' ? stored :
-                  stored === 'system' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') :
-                  'dark';
-    document.documentElement.classList.add(theme);
-    document.documentElement.style.colorScheme = theme;
+    try {
+      var cookie = document.cookie.split('; ').find(function(row) { return row.startsWith('nimbi-store='); });
+      if (cookie) {
+        var data = JSON.parse(decodeURIComponent(cookie.split('=')[1]));
+        var stored = data.preferences && data.preferences.state && data.preferences.state.theme;
+        if (stored === 'light' || stored === 'dark') {
+          document.documentElement.classList.add(stored);
+          document.documentElement.style.colorScheme = stored;
+          return;
+        }
+        if (stored === 'system') {
+          var resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.classList.add(resolved);
+          document.documentElement.style.colorScheme = resolved;
+          return;
+        }
+      }
+    } catch (e) {}
+    document.documentElement.classList.add('dark');
+    document.documentElement.style.colorScheme = 'dark';
   })();
 `
 
@@ -180,6 +194,10 @@ export const Route = createRootRoute({
         href: appCss,
       },
       {
+        rel: 'shortcut icon',
+        href: '/favicon.ico',
+      },
+      {
         rel: 'icon',
         type: 'image/svg+xml',
         href: '/favicon.svg',
@@ -290,6 +308,12 @@ function RootComponent() {
   return <Outlet />
 }
 
+// Component that applies theme effect and renders children
+function ThemeApplier({ children }: { children: React.ReactNode }) {
+  useThemeEffect()
+  return <>{children}</>
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   // Get the appropriate QueryClient (new per-request on server, singleton on browser)
   const queryClient = getQueryClient()
@@ -303,7 +327,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="min-h-screen bg-background antialiased">
         <I18nextProvider i18n={i18n}>
-          <ThemeProvider>
+          <ThemeApplier>
             <NavigationLoader />
             <QueryClientProvider client={queryClient}>
               {children}
@@ -319,7 +343,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 ]}
               />
             </QueryClientProvider>
-          </ThemeProvider>
+          </ThemeApplier>
         </I18nextProvider>
         <Scripts />
       </body>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useTheme } from '@/hooks/use-theme'
+import { useTheme } from '@/stores'
 import { cn } from '@/lib/utils'
 
 export function ThemeToggle() {

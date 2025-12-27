@@ -17,9 +17,13 @@ const HOURLY_PARAMS = [
 
 const DAILY_PARAMS = ['sunrise', 'sunset'].join(',')
 
-// Model-specific API endpoints (UKMO uses generic forecast endpoint with models param)
+// Model-specific API endpoints
+// UKMO uses generic forecast endpoint with models param
+// ICON uses DWD API, ARPEGE uses Météo-France API
 const MODEL_API_CONFIG: Record<ModelId, { endpoint: string; modelParam?: string }> = {
   'ecmwf-hres': { endpoint: 'https://api.open-meteo.com/v1/ecmwf' },
+  icon: { endpoint: 'https://api.open-meteo.com/v1/dwd-icon' },
+  arpege: { endpoint: 'https://api.open-meteo.com/v1/meteofrance' },
   gfs: { endpoint: 'https://api.open-meteo.com/v1/gfs' },
   gem: { endpoint: 'https://api.open-meteo.com/v1/gem' },
   ukmo: { endpoint: 'https://api.open-meteo.com/v1/forecast', modelParam: 'ukmo_seamless' },

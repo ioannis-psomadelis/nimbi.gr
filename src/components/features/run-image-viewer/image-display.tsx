@@ -19,6 +19,7 @@ export const ImageDisplay = memo(function ImageDisplay({
   const [displayedUrl, setDisplayedUrl] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
+  const [failedUrl, setFailedUrl] = useState<string | null>(null)
 
   // Preload ref
   const preloadRef = useRef<HTMLImageElement | null>(null)
@@ -32,6 +33,7 @@ export const ImageDisplay = memo(function ImageDisplay({
 
     setIsLoading(true)
     setHasError(false)
+    setFailedUrl(null)
 
     const img = new Image()
     preloadRef.current = img
@@ -41,6 +43,7 @@ export const ImageDisplay = memo(function ImageDisplay({
         setDisplayedUrl(url)
         setIsLoading(false)
         setHasError(false)
+        setFailedUrl(null)
       }
     }
 
@@ -48,6 +51,8 @@ export const ImageDisplay = memo(function ImageDisplay({
       if (img === preloadRef.current) {
         setIsLoading(false)
         setHasError(true)
+        setFailedUrl(url)
+        // Keep displayedUrl unchanged - show previous valid image
       }
     }
 
@@ -117,8 +122,8 @@ export const ImageDisplay = memo(function ImageDisplay({
         </div>
       )}
 
-      {/* Error State */}
-      {hasError && !isLoading && (
+      {/* Error State - Full overlay only when no previous image */}
+      {hasError && !isLoading && !displayedUrl && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/95">
           <div className="flex flex-col items-center gap-4 text-center p-6 sm:p-8">
             <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
@@ -135,6 +140,24 @@ export const ImageDisplay = memo(function ImageDisplay({
               className="px-4 py-2 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-sm font-medium transition-colors"
             >
               {t('tryAgain')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Error Toast - Subtle notification when previous image is showing */}
+      {hasError && !isLoading && displayedUrl && failedUrl && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-card border border-border shadow-lg">
+            <svg className="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span className="text-sm text-foreground">{t('chartNotReady')}</span>
+            <button
+              onClick={handleRetry}
+              className="ml-2 px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-xs font-medium transition-colors"
+            >
+              {t('retry')}
             </button>
           </div>
         </div>

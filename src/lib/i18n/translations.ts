@@ -29,6 +29,7 @@ export const translations = {
       chartNotAvailable: 'Chart not available',
       chartNotReady: 'This forecast hour may not be ready yet',
       tryAgain: 'Try again',
+      retry: 'Retry',
       noChartLoaded: 'No chart loaded',
       noDataAvailable: 'No data available',
       tempHigh: 'High',
@@ -135,6 +136,13 @@ export const translations = {
       visualization: 'visualization',
       latest: 'Latest',
       error: 'Error',
+      yes: 'Yes',
+      no: 'No',
+      resolution: 'Resolution',
+      updateTimes: 'Updates',
+      forecastLength: 'Forecast',
+      modelInfo: '{{model}} info',
+      modelDetails: 'Model details',
       runInfoTooltip: 'Model runs are initialized every 6 hours (00z, 06z, 12z, 18z) and become available ~5 hours later.',
       nextRunAvailable: 'Next run available',
       runTimingInfo: 'Run timing info',
@@ -148,12 +156,21 @@ export const translations = {
       // Regions
       region: 'Region',
       europe: 'Europe',
+      regional: 'Regional',
+      regionalNotAvailable: 'Regional charts not available for this model',
+      paramNotAvailable: 'Parameter not available for this model',
       greece: 'Greece',
       france: 'France',
       italy: 'Italy',
       spain: 'Spain',
       uk: 'United Kingdom',
       germany: 'Germany',
+      balkans: 'Balkans',
+      central_europe: 'Central Europe',
+      scandinavia: 'Scandinavia',
+      netherlands: 'Benelux',
+      denmark: 'Denmark',
+      turkey: 'Turkey',
 
       // Home page
       multiModelWeatherObservatory: 'Multi-model weather observatory',
@@ -235,10 +252,12 @@ export const translations = {
       downloading: 'Downloading...',
 
       // SEO Meta
-      metaHomeTitle: 'nimbi.gr - Weather Observatory',
-      metaHomeDescription: 'Multi-model weather forecasts comparing ECMWF, GFS, GEM & UKMO models',
+      metaHomeTitle: 'nimbi.gr - Weather Observatory | Multi-Model Forecasts',
+      metaHomeDescription:
+        'Compare weather forecasts from ECMWF, GFS, GEM & UKMO models. Get accurate 7-day predictions with hourly temperature, precipitation, wind & humidity charts for any location.',
       metaObservatoryTitle: '{{location}} Weather Forecast | nimbi.gr',
-      metaObservatoryDescription: '7-day weather forecast for {{location}} comparing ECMWF, GFS, GEM & UKMO models',
+      metaObservatoryDescription:
+        'Accurate weather forecast for {{location}}. Compare ECMWF, GFS, GEM & UKMO models with hourly charts for temperature, rain, wind, humidity & pressure.',
       meta404Title: 'Page Not Found | nimbi.gr',
 
       // Air Quality
@@ -324,6 +343,7 @@ export const translations = {
       chartNotAvailable: 'Ο χάρτης δεν είναι διαθέσιμος',
       chartNotReady: 'Αυτή η ώρα πρόγνωσης μπορεί να μην είναι έτοιμη ακόμα',
       tryAgain: 'Δοκιμάστε ξανά',
+      retry: 'Επανάληψη',
       noChartLoaded: 'Δεν φορτώθηκε χάρτης',
       noDataAvailable: 'Δεν υπάρχουν διαθέσιμα δεδομένα',
       tempHigh: 'Μέγιστη',
@@ -430,6 +450,13 @@ export const translations = {
       visualization: 'απεικόνιση',
       latest: 'Πιο πρόσφατο',
       error: 'Σφάλμα',
+      yes: 'Ναι',
+      no: 'Όχι',
+      resolution: 'Ανάλυση',
+      updateTimes: 'Ενημερώσεις',
+      forecastLength: 'Πρόγνωση',
+      modelInfo: 'Πληροφορίες {{model}}',
+      modelDetails: 'Λεπτομέρειες μοντέλου',
       runInfoTooltip: 'Τα μοντέλα εκτελούνται κάθε 6 ώρες (00z, 06z, 12z, 18z) και διατίθενται ~5 ώρες αργότερα.',
       nextRunAvailable: 'Επόμενη εκτέλεση',
       runTimingInfo: 'Πληροφορίες χρονισμού εκτέλεσης',
@@ -443,12 +470,21 @@ export const translations = {
       // Regions
       region: 'Περιοχή',
       europe: 'Ευρώπη',
+      regional: 'Τοπικά',
+      regionalNotAvailable: 'Δεν υπάρχουν τοπικά χάρτες για αυτό το μοντέλο',
+      paramNotAvailable: 'Η παράμετρος δεν είναι διαθέσιμη για αυτό το μοντέλο',
       greece: 'Ελλάδα',
       france: 'Γαλλία',
       italy: 'Ιταλία',
       spain: 'Ισπανία',
       uk: 'Ηνωμένο Βασίλειο',
       germany: 'Γερμανία',
+      balkans: 'Βαλκάνια',
+      central_europe: 'Κεντρική Ευρώπη',
+      scandinavia: 'Σκανδιναβία',
+      netherlands: 'Μπενελούξ',
+      denmark: 'Δανία',
+      turkey: 'Τουρκία',
 
       // Home page
       multiModelWeatherObservatory: 'Μετεωρολογικό παρατηρητήριο πολλαπλών μοντέλων',
@@ -530,10 +566,12 @@ export const translations = {
       downloading: 'Λήψη...',
 
       // SEO Meta
-      metaHomeTitle: 'nimbi.gr - Μετεωρολογικό Παρατηρητήριο',
-      metaHomeDescription: 'Προγνώσεις καιρού πολλαπλών μοντέλων συγκρίνοντας ECMWF, GFS, GEM & UKMO',
+      metaHomeTitle: 'nimbi.gr - Μετεωρολογικό Παρατηρητήριο | Προγνώσεις Πολλαπλών Μοντέλων',
+      metaHomeDescription:
+        'Συγκρίνετε προγνώσεις καιρού από ECMWF, GFS, GEM & UKMO. Ακριβείς 7ήμερες προβλέψεις με ωριαία γραφήματα θερμοκρασίας, βροχόπτωσης, ανέμου & υγρασίας για κάθε τοποθεσία.',
       metaObservatoryTitle: 'Πρόγνωση Καιρού {{location}} | nimbi.gr',
-      metaObservatoryDescription: '7ήμερη πρόγνωση καιρού για {{location}} συγκρίνοντας μοντέλα ECMWF, GFS, GEM & UKMO',
+      metaObservatoryDescription:
+        'Ακριβής πρόγνωση καιρού για {{location}}. Συγκρίνετε μοντέλα ECMWF, GFS, GEM & UKMO με ωριαία γραφήματα θερμοκρασίας, βροχής, ανέμου, υγρασίας & πίεσης.',
       meta404Title: 'Η Σελίδα Δεν Βρέθηκε | nimbi.gr',
 
       // Air Quality

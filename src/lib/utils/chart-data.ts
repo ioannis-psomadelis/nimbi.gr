@@ -26,7 +26,11 @@ export function transformToChartData(
 
     models.forEach(({ model, data }) => {
       if (data) {
-        point[model] = data.hourly[variable][index]
+        const value = data.hourly[variable][index]
+        // Only include non-null values
+        if (value !== null) {
+          point[model] = value
+        }
       }
     })
 

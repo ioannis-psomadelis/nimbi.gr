@@ -70,16 +70,23 @@ function extractDailyForecast(
 
   if (startIdx >= data.hourly.time.length) return null
 
-  const temps = data.hourly.temperature_2m.slice(startIdx, endIdx)
-  const precips = data.hourly.precipitation.slice(startIdx, endIdx)
-  const clouds = data.hourly.cloud_cover.slice(startIdx, endIdx)
-  const winds = data.hourly.wind_speed_10m.slice(startIdx, endIdx)
-  const pressures = data.hourly.pressure_msl.slice(startIdx, endIdx)
+  const tempsRaw = data.hourly.temperature_2m.slice(startIdx, endIdx)
+  const precipsRaw = data.hourly.precipitation.slice(startIdx, endIdx)
+  const cloudsRaw = data.hourly.cloud_cover.slice(startIdx, endIdx)
+  const windsRaw = data.hourly.wind_speed_10m.slice(startIdx, endIdx)
+  const pressuresRaw = data.hourly.pressure_msl.slice(startIdx, endIdx)
+
+  // Filter out null values
+  const temps = tempsRaw.filter((t): t is number => t !== null)
+  const precips = precipsRaw.filter((p): p is number => p !== null)
+  const clouds = cloudsRaw.filter((c): c is number => c !== null)
+  const winds = windsRaw.filter((w): w is number => w !== null)
+  const pressures = pressuresRaw.filter((p): p is number => p !== null)
 
   if (temps.length === 0) return null
 
   const date = new Date(data.hourly.time[startIdx])
-  const avgCloud = clouds.reduce((a, b) => a + b, 0) / clouds.length
+  const avgCloud = clouds.length > 0 ? clouds.reduce((a, b) => a + b, 0) / clouds.length : 0
   const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length
   const totalPrecip = precips.reduce((a, b) => a + b, 0)
   const precipHours = precips.filter((p) => p > 0.1).length
@@ -92,7 +99,7 @@ function extractDailyForecast(
     precipTotal: Math.round(totalPrecip * 10) / 10,
     precipHours,
     condition: getCondition(avgCloud, totalPrecip, avgTemp),
-    windMax: Math.round(Math.max(...winds)),
+    windMax: winds.length > 0 ? Math.round(Math.max(...winds)) : 0,
     pressureTrend: getPressureTrend(pressures),
   }
 }

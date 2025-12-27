@@ -5,11 +5,14 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   CHART_PARAMS,
-  buildMeteocielUrl,
+  buildChartUrl,
+  getChartAttribution,
   type ChartParamId,
   type ChartRegion,
+  type ChartScope,
   detectBestRegion,
 } from '../../../lib/utils/runs'
+import { MODEL_CONFIG } from '../../../types/models'
 import {
   type RunImageViewerProps,
   type ForecastDateTime,
@@ -27,6 +30,7 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
   const { t, i18n } = useTranslation()
   const [selectedParam, setSelectedParam] = useState<ChartParamId>('0')
   const [forecastHour, setForecastHour] = useState(24)
+  const [scope, setScope] = useState<ChartScope>('europe')
   const detectedRegion = latitude && longitude ? detectBestRegion(latitude, longitude) : 'europe'
   const [selectedRegion, setSelectedRegion] = useState<ChartRegion>(detectedRegion)
 
@@ -82,10 +86,26 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
 
   // Get the config for the selected parameter
   const selectedParamConfig = CHART_PARAMS.find(p => p.id === selectedParam)
-  const mode = selectedParamConfig?.mode ?? 0
+
+  // Get model config and chart attribution
+  const modelConfig = MODEL_CONFIG[model]
+  const chartAttribution = getChartAttribution(model)
+
+  // Limit params for Wetterzentrale (only MSLP and 850hPa temp available)
+  const effectiveParam = useMemo(() => {
+    if (modelConfig.chartProvider === 'wetterzentrale') {
+      // Only mode 0 (MSLP) and mode 1 (850 temp) available
+      return ['0', '1'].includes(selectedParam) ? selectedParam : '0'
+    }
+    return selectedParam
+  }, [selectedParam, modelConfig.chartProvider])
+
+  const effectiveMode = CHART_PARAMS.find(p => p.id === effectiveParam)?.mode ?? 0
 
   // Build the target image URL - use effectiveForecastHour for immediate response
-  const targetUrl = buildMeteocielUrl(model, runId, mode, effectiveForecastHour, selectedRegion)
+  const lat = latitude ?? 38
+  const lon = longitude ?? 24
+  const targetUrl = buildChartUrl(model, runId, effectiveMode, effectiveForecastHour, scope, lat, lon, selectedRegion)
 
   // Calculate forecast date/time from run ID and forecast hour (memoized)
   const forecastDateTime: ForecastDateTime = useMemo(() => {
@@ -133,14 +153,19 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
           selectedParam={selectedParam}
           onChange={setSelectedParam}
           availableParams={availableParams}
+          disabledParams={modelConfig.chartProvider === 'wetterzentrale' ? ['9', '2', '14', '5'] : []}
         />
 
-        {/* Region Selector - Show for models that support regional charts */}
+        {/* Region Selector - Europe/Regional toggle with country selection */}
         <RegionSelector
+          scope={scope}
+          onScopeChange={setScope}
           selectedRegion={selectedRegion}
-          onChange={setSelectedRegion}
+          onRegionChange={setSelectedRegion}
           availableRegions={availableRegions}
           model={model}
+          latitude={latitude}
+          longitude={longitude}
         />
 
         {/* Forecast Time Display */}
@@ -170,18 +195,18 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
             <p className="text-[9px] sm:text-[10px] text-muted-foreground/60">
               {t('chartsFrom')}{' '}
               <a
-                href="https://www.meteociel.fr"
+                href={chartAttribution.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary/70 hover:text-primary transition-colors"
               >
-                Meteociel.fr
+                {chartAttribution.name}
               </a>
             </p>
             {/* Keyboard shortcut hints - hidden on mobile */}
             <div className="hidden sm:flex items-center gap-2 text-[9px] text-muted-foreground/50">
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 bg-muted/50 rounded text-[8px] font-mono">1-4</kbd>
+                <kbd className="px-1 py-0.5 bg-muted/50 rounded text-[8px] font-mono">1-6</kbd>
                 <span>{t('keyboardShortcutModels', 'models')}</span>
               </span>
               <span className="flex items-center gap-1">

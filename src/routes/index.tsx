@@ -1,13 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { Input } from '@/components/ui/input'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
+import { SearchModal } from '@/components/features/search-modal'
 import { getAllLocations, createLocationFromCoords } from '../lib/server/locations'
-import { searchLocations, type GeocodeResult } from '../lib/server/geocode'
 import i18n from '../lib/i18n'
 import { CLOUD_PATH } from '../components/ui/logo'
 
@@ -108,18 +107,11 @@ function HomePage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { locations } = Route.useLoaderData()
-  const searchContainerRef = useRef<HTMLDivElement>(null)
 
   // Geolocation state
   const [permissionState, setPermissionState] = useState<PermissionState>('prompt')
   const [isLocating, setIsLocating] = useState(false)
   const [locationError, setLocationError] = useState<string | null>(null)
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<GeocodeResult[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-  const [showResults, setShowResults] = useState(false)
 
   // Check geolocation permission on mount
   useEffect(() => {
@@ -176,37 +168,6 @@ function HomePage() {
     }
   }
 
-  // Handle search
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query)
-
-    if (query.length < 2) {
-      setSearchResults([])
-      setShowResults(false)
-      return
-    }
-
-    setIsSearching(true)
-    setShowResults(true)
-
-    try {
-      const results = await searchLocations({ data: query })
-      setSearchResults(results)
-    } catch (error) {
-      console.error('Search failed:', error)
-      setSearchResults([])
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
-  // Handle search result selection
-  const handleSelectSearchResult = async (result: GeocodeResult) => {
-    setShowResults(false)
-    setSearchQuery('')
-    await navigateToObservatory(result.lat, result.lon)
-  }
-
   // Handle quick pick selection
   const handleQuickPick = (slug: string) => {
     navigate({ to: '/observatory/$slug', params: { slug } })
@@ -214,17 +175,6 @@ function HomePage() {
 
   // Get top 6 locations for quick picks
   const quickPicks = Object.entries(locations).slice(0, 6)
-
-  // Close search results when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setShowResults(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   // Generate weather particles
   const snowflakes = Array.from({ length: 40 }, (_, i) => (
@@ -342,62 +292,8 @@ function HomePage() {
               <p className="text-destructive text-xs text-center">{locationError}</p>
             )}
 
-            {/* Search input */}
-            <div className="relative z-50" ref={searchContainerRef}>
-              <div className="relative">
-                <svg
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground/40"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <Input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  onFocus={() => searchQuery.length >= 2 && setShowResults(true)}
-                  placeholder={t('searchForACity')}
-                  className="w-full h-12 pl-10 pr-4 text-sm rounded-xl bg-background/50 border-border/50 focus:bg-background focus:border-primary/50"
-                />
-                {isSearching && (
-                  <div className="absolute right-3.5 top-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
-
-              {/* Search results dropdown */}
-              {showResults && searchResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/50 shadow-xl rounded-xl overflow-hidden z-50 py-1">
-                  {searchResults.map((result, index) => (
-                    <button
-                      key={`${result.lat}-${result.lon}-${index}`}
-                      onClick={() => handleSelectSearchResult(result)}
-                      className="w-full px-4 py-2.5 text-left hover:bg-primary/10 transition-colors flex items-center gap-3"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <span className="text-sm font-medium text-foreground block truncate">{result.name}</span>
-                        <span className="text-xs text-foreground/50">{result.country}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* No results */}
-              {showResults && searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border/50 shadow-xl rounded-xl py-4 px-4 text-center text-foreground/50 text-sm z-50">
-                  {t('noResultsFound')}
-                </div>
-              )}
-            </div>
+            {/* Search - uses shared modal */}
+            <SearchModal variant="home" />
           </div>
 
           {/* Quick picks */}

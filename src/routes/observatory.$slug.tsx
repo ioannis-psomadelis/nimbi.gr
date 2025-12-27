@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, useRef, Suspense } from 'react'
+import { useState, useMemo, useCallback, useRef, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, HydrationBoundary, dehydrate } from '@tanstack/react-query'
@@ -13,12 +13,13 @@ import { RunSelector } from '../components/features/run-selector'
 import { RunImageViewer } from '../components/features/run-image-viewer'
 import { SimpleHero, SimpleWeatherView } from '../components/features/simple-mode'
 import { MODELS, MODEL_CONFIG, type ModelId } from '../types/models'
-import { getLatestRun, getPreviousRuns, detectRegion } from '../lib/utils/runs'
+import { detectRegion } from '../lib/utils/runs'
+import { useModelRuns, getNearestValidRunHour, getLatestModelRun } from '../hooks/use-model-runs'
 import { allModelsQueryOptions } from '../lib/api/weather'
 import { getQueryClient } from '../lib/query-client'
 import { getLocationBySlug } from '../lib/server/locations'
 import { getServerSavedLocations, getServerSelectedModel, getServerProMode } from '../lib/server/storage'
-import { saveSelectedModel } from '../lib/storage'
+import { useWeatherStore } from '../stores'
 import { useKeyboardShortcuts } from '../hooks/use-keyboard-shortcuts'
 import type { WeatherResponse } from '../types/weather'
 import { WeeklyOutlookWidget, OutlookTrigger } from '../components/features/weekly-outlook'
@@ -210,22 +211,26 @@ function ModelCardsContent({
   const getCurrentTemperature = useCallback((model: ModelId) => {
     const data = modelData[model]
     if (!data) return undefined
-    return data.hourly.temperature_2m[0]
+    const temp = data.hourly.temperature_2m[0]
+    return temp !== null ? temp : undefined
   }, [modelData])
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
-      {MODELS.map((model) => (
-        <ModelCard
-          key={model}
-          model={model}
-          temperature={getCurrentTemperature(model)}
-          isLoading={false}
-          isError={modelData[model] === null}
-          isSelected={selectedModel === model}
-          onClick={() => onModelSelect(model)}
-        />
-      ))}
+    <div className="overflow-x-auto pb-1">
+      <div className="flex gap-2 sm:gap-3 min-w-max">
+        {MODELS.map((model) => (
+          <ModelCard
+            key={model}
+            model={model}
+            temperature={getCurrentTemperature(model)}
+            isLoading={false}
+            isError={modelData[model] === null}
+            isSelected={selectedModel === model}
+            onClick={() => onModelSelect(model)}
+            showInfo
+          />
+        ))}
+      </div>
     </div>
   )
 }
@@ -336,53 +341,67 @@ function SidebarOutlookTrigger({
 }
 
 // Header sidebar trigger - animates in/out based on sidebar state
-// On mobile: always visible. On desktop: hidden (sidebar always open by default).
+// On mobile: always visible. On desktop: hidden when sidebar is open.
+// Uses consistent wrapper structure for SSR to prevent layout shift.
 function HeaderSidebarTrigger() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar()
 
-  // During SSR (isMobile undefined): use CSS to show on mobile, hide on desktop
+  const handleClick = () => {
+    if (isMobile) {
+      setOpenMobile(!openMobile)
+    } else {
+      setOpen(true)
+    }
+  }
+
+  // SSR: render with desktop-hidden classes (md:w-0) since sidebar defaults open
+  // This matches the hydrated desktop state, preventing layout shift
   if (isMobile === undefined) {
     return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground md:hidden"
-        onClick={() => setOpenMobile(!openMobile)}
-      >
-        <div className="hamburger-menu" data-open={openMobile}>
-          <span />
-          <span />
-          <span />
-        </div>
-        <span className="sr-only">Toggle sidebar</span>
-      </Button>
+      <div className="w-9 md:w-0 md:opacity-0 overflow-hidden transition-all duration-300 ease-out">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground"
+          onClick={handleClick}
+        >
+          <div className="hamburger-menu" data-open={false}>
+            <span />
+            <span />
+            <span />
+          </div>
+          <span className="sr-only">Toggle sidebar</span>
+        </Button>
+      </div>
     )
   }
 
-  // Mobile: always show hamburger, toggles sidebar
+  // Mobile: always show, no wrapper animation needed
   if (isMobile) {
     return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground"
-        onClick={() => setOpenMobile(!openMobile)}
-      >
-        <div className="hamburger-menu" data-open={openMobile}>
-          <span />
-          <span />
-          <span />
-        </div>
-        <span className="sr-only">Toggle sidebar</span>
-      </Button>
+      <div className="w-9 overflow-hidden">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground"
+          onClick={handleClick}
+        >
+          <div className="hamburger-menu" data-open={openMobile}>
+            <span />
+            <span />
+            <span />
+          </div>
+          <span className="sr-only">Toggle sidebar</span>
+        </Button>
+      </div>
     )
   }
 
-  // Desktop: animate in/out based on sidebar state (usually hidden since sidebar is open)
+  // Desktop: animate width based on sidebar state
   return (
     <div
       className={`
-        transition-all duration-300 ease-out overflow-hidden
+        overflow-hidden transition-all duration-300 ease-out
         ${open ? 'w-0 opacity-0' : 'w-9 opacity-100'}
       `}
     >
@@ -390,7 +409,7 @@ function HeaderSidebarTrigger() {
         variant="ghost"
         size="icon"
         className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground"
-        onClick={() => setOpen(true)}
+        onClick={handleClick}
       >
         <div className="hamburger-menu" data-open={open}>
           <span />
@@ -484,16 +503,33 @@ function ObservatoryContent({
 
   // Run state - use saved model from cookie or default to ecmwf-hres
   const [selectedModel, setSelectedModel] = useState<ModelId>(savedModel || 'ecmwf-hres')
-  const currentRun = getLatestRun()
-  const previousRuns = getPreviousRuns(4)
-  const [selectedRun, setSelectedRun] = useState(currentRun)
   const region = detectRegion(lat, lon)
 
-  // Memoized model select handler - save to cookie
+  // Get model-specific run times
+  const { latestRun, previousRuns } = useModelRuns(selectedModel)
+  const [selectedRun, setSelectedRun] = useState(latestRun)
+
+  // Zustand store for persisting selected model
+  const setStoredModel = useWeatherStore((s) => s.setSelectedModel)
+
+  // Update selected run when model changes to use model-appropriate runs
+  useEffect(() => {
+    // Get the nearest valid run for the new model
+    const currentRunHour = selectedRun.hour
+    const nearestValidHour = getNearestValidRunHour(selectedModel, currentRunHour)
+
+    if (nearestValidHour !== currentRunHour) {
+      // Find the matching run or use the latest
+      const newRun = getLatestModelRun(selectedModel)
+      setSelectedRun(newRun)
+    }
+  }, [selectedModel, selectedRun.hour])
+
+  // Memoized model select handler - save to Zustand store (persisted to cookie)
   const handleModelSelect = useCallback((model: ModelId) => {
     setSelectedModel(model)
-    saveSelectedModel(model)
-  }, [])
+    setStoredModel(model)
+  }, [setStoredModel])
 
   // Ref for keyboard navigation of forecast hours
   const forecastHourRef = useRef<{ goToPrevious: () => void; goToNext: () => void } | null>(null)
@@ -763,7 +799,7 @@ function ObservatoryContent({
                 </div>
 
                 <RunSelector
-                  currentRun={currentRun}
+                  currentRun={latestRun}
                   previousRuns={previousRuns}
                   selectedRun={selectedRun}
                   onRunChange={setSelectedRun}

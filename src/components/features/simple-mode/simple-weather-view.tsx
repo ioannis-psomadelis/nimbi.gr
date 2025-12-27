@@ -103,9 +103,9 @@ function extractHoursForDay(data: WeatherResponse, dayIndex: number, isToday: bo
 
     const time = new Date(data.hourly.time[idx])
     const hour = time.getHours()
-    const temp = data.hourly.temperature_2m[idx]
-    const cloud = data.hourly.cloud_cover[idx]
-    const precip = data.hourly.precipitation[idx]
+    const temp = data.hourly.temperature_2m[idx] ?? 0
+    const cloud = data.hourly.cloud_cover[idx] ?? 0
+    const precip = data.hourly.precipitation[idx] ?? 0
     const precipProb = data.hourly.precipitation_probability?.[idx] ?? 0
     const weatherCode = data.hourly.weather_code?.[idx] ?? undefined
     const condition = getCondition(cloud, precip, temp, weatherCode)
@@ -139,18 +139,23 @@ function extractDays(data: WeatherResponse, locale: string): DayData[] {
     const endIdx = startIdx + hoursPerDay
     if (startIdx >= data.hourly.time.length) break
 
-    const temps = data.hourly.temperature_2m.slice(startIdx, endIdx)
-    const clouds = data.hourly.cloud_cover.slice(startIdx, endIdx)
-    const precips = data.hourly.precipitation.slice(startIdx, endIdx)
+    const tempsRaw = data.hourly.temperature_2m.slice(startIdx, endIdx)
+    const cloudsRaw = data.hourly.cloud_cover.slice(startIdx, endIdx)
+    const precipsRaw = data.hourly.precipitation.slice(startIdx, endIdx)
     const precipProbs = data.hourly.precipitation_probability?.slice(startIdx, endIdx) ?? []
     const weatherCodes = data.hourly.weather_code?.slice(startIdx, endIdx) ?? []
+
+    // Filter out null values
+    const temps = tempsRaw.filter((t): t is number => t !== null)
+    const clouds = cloudsRaw.filter((c): c is number => c !== null)
+    const precips = precipsRaw.filter((p): p is number => p !== null)
 
     if (temps.length === 0) continue
 
     const date = new Date(data.hourly.time[startIdx])
     date.setHours(0, 0, 0, 0)
 
-    const avgCloud = clouds.reduce((a, b) => a + b, 0) / clouds.length
+    const avgCloud = clouds.length > 0 ? clouds.reduce((a, b) => a + b, 0) / clouds.length : 0
     const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length
     const totalPrecip = precips.reduce((a, b) => a + b, 0)
     const validProbs = precipProbs.filter((p): p is number => p !== null && p !== undefined)

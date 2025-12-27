@@ -1,9 +1,19 @@
-import { type ModelId } from '../../types/models'
+import { type ModelId, MODEL_CONFIG } from '../../types/models'
 
-// Regional chart support for Meteociel
-export type ChartRegion = 'europe' | 'greece' | 'france' | 'italy' | 'spain' | 'uk' | 'germany'
+// Model run times - which UTC hours each model runs at
+export const MODEL_RUN_TIMES: Record<ModelId, number[]> = {
+  'ecmwf-hres': [0, 12],
+  icon: [0, 6, 12, 18],
+  arpege: [0, 6, 12, 18],
+  gfs: [0, 6, 12, 18],
+  gem: [0, 12],
+  ukmo: [0, 12],
+}
 
-export const REGION_CONFIG: Record<ChartRegion, { name: string; nameKey: string; ecmwfCode: string; hresSuffix: string }> = {
+// Regional chart support for Meteociel (ECMWF)
+export type MeteocielRegion = 'europe' | 'greece' | 'france' | 'italy' | 'spain' | 'uk' | 'germany'
+
+export const METEOCIEL_REGION_CONFIG: Record<MeteocielRegion, { name: string; nameKey: string; ecmwfCode: string; hresSuffix: string }> = {
   europe: { name: 'Europe', nameKey: 'europe', ecmwfCode: 'ECM', hresSuffix: '' },
   greece: { name: 'Greece', nameKey: 'greece', ecmwfCode: 'ECG', hresSuffix: 'gr' },
   france: { name: 'France', nameKey: 'france', ecmwfCode: 'ECF', hresSuffix: 'fr' },
@@ -13,8 +23,19 @@ export const REGION_CONFIG: Record<ChartRegion, { name: string; nameKey: string;
   germany: { name: 'Germany', nameKey: 'germany', ecmwfCode: 'ECA', hresSuffix: 'de' },
 }
 
-// Models that support regional charts
-export const REGIONAL_MODELS: ModelId[] = ['ecmwf-hres']
+// Legacy alias for backward compatibility
+export type ChartRegion = MeteocielRegion
+export const REGION_CONFIG = METEOCIEL_REGION_CONFIG
+
+// Get models that support regional charts
+export function getRegionalModels(): ModelId[] {
+  return Object.entries(MODEL_CONFIG)
+    .filter(([, config]) => config.hasRegional)
+    .map(([id]) => id as ModelId)
+}
+
+// Legacy constant for backward compatibility
+export const REGIONAL_MODELS: ModelId[] = ['ecmwf-hres', 'icon', 'arpege']
 
 export interface RunInfo {
   id: string        // YYYYMMDDHH
@@ -95,7 +116,7 @@ export function getPreviousRuns(count: number = 4): RunInfo[] {
   return runs
 }
 
-function formatRunInfo(date: Date, hour: number): RunInfo {
+export function formatRunInfo(date: Date, hour: number): RunInfo {
   const year = date.getUTCFullYear()
   const month = String(date.getUTCMonth() + 1).padStart(2, '0')
   const day = String(date.getUTCDate()).padStart(2, '0')
@@ -214,8 +235,11 @@ const UKMO_MODE_MAP: Record<number, string> = {
   5: 'UW5',   // Jet stream
 }
 
-// Models that only run at 00z and 12z (not 06z and 18z like GFS/GEM)
-const TWICE_DAILY_MODELS: ModelId[] = ['ecmwf-hres', 'ukmo']
+// Models that only run at 00z and 12z (not 06z and 18z)
+// Derived from MODEL_RUN_TIMES
+const TWICE_DAILY_MODELS: ModelId[] = Object.entries(MODEL_RUN_TIMES)
+  .filter(([, times]) => times.length === 2 && times.includes(0) && times.includes(12))
+  .map(([id]) => id as ModelId)
 
 /**
  * Get the appropriate run ID for models that only have 00z and 12z runs.
@@ -239,7 +263,10 @@ function getModelRunId(model: ModelId, runId: string): string {
   return runId
 }
 
-// Build Meteociel chart URL for any supported model
+// Chart scope - Europe-wide or Regional zoom
+export type ChartScope = 'europe' | 'regional'
+
+// Build Meteociel chart URL for supported models (ECMWF, GFS, GEM, UKMO)
 export function buildMeteocielUrl(
   model: ModelId,
   runId: string,
@@ -276,4 +303,65 @@ export function buildMeteocielUrl(
     default:
       return `https://modeles16.meteociel.fr/modeles/gfs/runs/${runId}/gfs-${mode}-${forecastHour}.png`
   }
+}
+
+// Import Wetterzentrale utilities
+import {
+  buildWetterzenUrl,
+  detectWetterzenRegion,
+  WETTERZENTRALE_PARAMS,
+  type WetterzenRegionCode,
+  type WetterzenParamCode,
+} from './wetterzentrale'
+
+// Map Meteociel mode to Wetterzentrale param
+function modeToWetterzenParam(mode: number): WetterzenParamCode {
+  // Mode 0 = MSLP (Pressure), Mode 1 = 850hPa Temp
+  // Wetterzentrale: 1 = MSLP, 2 = 850 hPa Temp
+  switch (mode) {
+    case 0: return WETTERZENTRALE_PARAMS.MSLP
+    case 1: return WETTERZENTRALE_PARAMS.TEMP_850
+    default: return WETTERZENTRALE_PARAMS.MSLP
+  }
+}
+
+// Build chart URL for any model based on scope
+export function buildChartUrl(
+  model: ModelId,
+  runId: string,
+  mode: number,
+  forecastHour: number,
+  scope: ChartScope,
+  lat: number,
+  lon: number,
+  meteocielRegion: ChartRegion = 'europe'
+): string {
+  const config = MODEL_CONFIG[model]
+
+  // For Wetterzentrale models (ICON, ARPEGE)
+  if (config.chartProvider === 'wetterzentrale') {
+    const runHour = parseInt(runId.slice(-2), 10)
+    const wetterzenRegion: WetterzenRegionCode = scope === 'regional'
+      ? detectWetterzenRegion(lat, lon)
+      : 'EU'
+    const param = modeToWetterzenParam(mode)
+    return buildWetterzenUrl(model as 'icon' | 'arpege', wetterzenRegion, runHour, forecastHour, param)
+  }
+
+  // For Meteociel models (ECMWF, GFS, GEM, UKMO)
+  // Use regional if scope is regional and model supports it
+  const effectiveRegion = scope === 'regional' && config.hasRegional
+    ? meteocielRegion
+    : 'europe'
+
+  return buildMeteocielUrl(model, runId, mode, forecastHour, effectiveRegion)
+}
+
+// Get chart provider attribution for a model
+export function getChartAttribution(model: ModelId): { name: string; url: string } {
+  const config = MODEL_CONFIG[model]
+  if (config.chartProvider === 'wetterzentrale') {
+    return { name: 'Wetterzentrale.de', url: 'https://www.wetterzentrale.de' }
+  }
+  return { name: 'Meteociel.fr', url: 'https://www.meteociel.fr' }
 }

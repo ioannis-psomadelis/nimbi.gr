@@ -19,29 +19,38 @@ interface ParamSelectorProps {
   selectedParam: ChartParamId
   onChange: (param: ChartParamId) => void
   availableParams: readonly ChartParam[]
+  disabledParams?: ChartParamId[]
 }
 
 export const ParamSelector = memo(function ParamSelector({
   selectedParam,
   onChange,
   availableParams,
+  disabledParams = [],
 }: ParamSelectorProps) {
   const { t } = useTranslation()
 
   return (
     <div className="p-3 sm:p-4 border-b border-border overflow-x-auto">
       <div className="flex gap-1.5 sm:gap-2 min-w-max">
-        {availableParams.map((param) => (
+        {availableParams.map((param) => {
+          const isDisabled = disabledParams.includes(param.id)
+
+          return (
           <div key={param.id} className="flex items-stretch">
             <button
-              onClick={() => onChange(param.id)}
+              onClick={() => !isDisabled && onChange(param.id)}
+              disabled={isDisabled}
               className={`
                 px-3 sm:px-4 py-1.5 sm:py-2 rounded-l-lg text-xs sm:text-sm font-medium transition-all duration-200
-                ${selectedParam === param.id
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'bg-muted hover:bg-secondary text-muted-foreground hover:text-foreground'
+                ${isDisabled
+                  ? 'bg-muted/50 text-muted-foreground/40 cursor-not-allowed'
+                  : selectedParam === param.id
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'bg-muted hover:bg-secondary text-muted-foreground hover:text-foreground'
                 }
               `}
+              title={isDisabled ? t('paramNotAvailable') : undefined}
             >
               <span className="hidden sm:inline">{t(getParamTranslations(param.id).label)}</span>
               <span className="sm:hidden">{t(getParamTranslations(param.id).short)}</span>
@@ -88,7 +97,7 @@ export const ParamSelector = memo(function ParamSelector({
               </DialogContent>
             </Dialog>
           </div>
-        ))}
+        )})}
       </div>
     </div>
   )

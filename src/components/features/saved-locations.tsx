@@ -1,23 +1,29 @@
 'use client'
 
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from '@tanstack/react-router'
-import { getSavedLocations, saveLocation, removeLocation } from '../../lib/storage'
-import { type SavedLocation } from '../../lib/server/storage'
+import { useLocationsStore, type SavedLocation } from '@/stores'
 import { createLocationFromCoords } from '@/lib/server/locations'
 
 interface SavedLocationsProps {
   currentLat?: number
   currentLon?: number
   currentName?: string
+  /** SSR-provided initial locations to prevent hydration flash */
   initialLocations?: SavedLocation[]
 }
 
 export function SavedLocations({ currentLat, currentLon, currentName, initialLocations = [] }: SavedLocationsProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [locations, setLocations] = useState<SavedLocation[]>(initialLocations)
+
+  // Use Zustand store for mutations and client-side state
+  const storeLocations = useLocationsStore((s) => s.savedLocations)
+  const saveLocation = useLocationsStore((s) => s.saveLocation)
+  const removeLocation = useLocationsStore((s) => s.removeLocation)
+
+  // Use SSR data if store is empty (pre-hydration), otherwise use store
+  const locations = storeLocations.length > 0 ? storeLocations : initialLocations
 
   const handleSaveCurrent = () => {
     if (currentLat === undefined || currentLon === undefined) return
@@ -31,12 +37,10 @@ export function SavedLocations({ currentLat, currentLon, currentName, initialLoc
     }
 
     saveLocation(newLocation)
-    setLocations(getSavedLocations())
   }
 
   const handleRemove = (id: string) => {
     removeLocation(id)
-    setLocations(getSavedLocations())
   }
 
   const handleNavigateToLocation = async (location: SavedLocation) => {

@@ -2,12 +2,13 @@ import { z } from 'zod'
 
 const HourlyDataSchema = z.object({
   time: z.array(z.string()),
-  temperature_2m: z.array(z.number()),
-  precipitation: z.array(z.number()),
-  wind_speed_10m: z.array(z.number()),
-  cloud_cover: z.array(z.number()),
-  pressure_msl: z.array(z.number()),
-  // New fields for enhanced weather data (nullable for models that don't support them)
+  // Core fields - allow nulls at end of forecast (models have different forecast lengths)
+  temperature_2m: z.array(z.number().nullable()),
+  precipitation: z.array(z.number().nullable()),
+  wind_speed_10m: z.array(z.number().nullable()),
+  cloud_cover: z.array(z.number().nullable()),
+  pressure_msl: z.array(z.number().nullable()),
+  // Optional fields - not all models support these
   precipitation_probability: z.array(z.number().nullable()).optional(),
   apparent_temperature: z.array(z.number().nullable()).optional(),
   uv_index: z.array(z.number().nullable()).optional(),
