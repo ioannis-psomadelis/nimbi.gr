@@ -88,9 +88,51 @@ export const Route = createFileRoute('/observatory/$slug')({
   head: ({ loaderData }) => {
     const locationName = loaderData?.location?.name || 'Weather'
     const slug = loaderData?.location?.slug || ''
+    const lat = loaderData?.location?.lat || 0
+    const lon = loaderData?.location?.lon || 0
+    const country = loaderData?.location?.country || ''
     const title = i18n.t('metaObservatoryTitle', { location: locationName })
     const description = i18n.t('metaObservatoryDescription', { location: locationName })
     const url = `https://nimbi.gr/observatory/${slug}`
+
+    // JSON-LD structured data for weather forecast page
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      '@id': `${url}#webpage`,
+      url: url,
+      name: title,
+      description: description,
+      isPartOf: {
+        '@id': 'https://nimbi.gr/#website',
+      },
+      about: {
+        '@type': 'Place',
+        name: locationName,
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: lat,
+          longitude: lon,
+        },
+        address: {
+          '@type': 'PostalAddress',
+          addressCountry: country,
+        },
+      },
+      mainEntity: {
+        '@type': 'WebApplication',
+        name: 'nimbi.gr Weather Forecast',
+        applicationCategory: 'WeatherApplication',
+        operatingSystem: 'Web',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'EUR',
+        },
+      },
+      inLanguage: ['en', 'el'],
+      dateModified: new Date().toISOString(),
+    }
 
     return {
       meta: [
@@ -126,6 +168,28 @@ export const Route = createFileRoute('/observatory/$slug')({
         {
           rel: 'canonical',
           href: url,
+        },
+        // Hreflang for this specific page
+        {
+          rel: 'alternate',
+          hrefLang: 'en',
+          href: url,
+        },
+        {
+          rel: 'alternate',
+          hrefLang: 'el',
+          href: url,
+        },
+        {
+          rel: 'alternate',
+          hrefLang: 'x-default',
+          href: url,
+        },
+      ],
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify(jsonLd),
         },
       ],
     }

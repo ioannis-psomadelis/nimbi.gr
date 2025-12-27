@@ -16,43 +16,89 @@ export const Route = createFileRoute('/')({
     const locations = await getAllLocations()
     return { locations }
   },
-  head: () => ({
-    meta: [
-      {
-        title: i18n.t('metaHomeTitle'),
+  head: () => {
+    const title = i18n.t('metaHomeTitle')
+    const description = i18n.t('metaHomeDescription')
+
+    // JSON-LD for home page
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      '@id': 'https://nimbi.gr/#homepage',
+      url: 'https://nimbi.gr/',
+      name: title,
+      description: description,
+      isPartOf: {
+        '@id': 'https://nimbi.gr/#website',
       },
-      {
-        name: 'description',
-        content: i18n.t('metaHomeDescription'),
+      about: {
+        '@type': 'WebApplication',
+        name: 'nimbi.gr',
+        applicationCategory: 'WeatherApplication',
+        operatingSystem: 'Web',
+        description: 'Multi-model weather forecasts comparing ECMWF, GFS, GEM & UKMO models',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'EUR',
+        },
+        featureList: [
+          'ECMWF weather forecasts',
+          'GFS weather forecasts',
+          'GEM weather forecasts',
+          'UKMO weather forecasts',
+          'Multi-model comparison',
+          '7-day weather forecast',
+          'Hourly weather data',
+        ],
       },
-      {
-        property: 'og:title',
-        content: i18n.t('metaHomeTitle'),
-      },
-      {
-        property: 'og:description',
-        content: i18n.t('metaHomeDescription'),
-      },
-      {
-        property: 'og:url',
-        content: 'https://nimbi.gr/',
-      },
-      {
-        name: 'twitter:title',
-        content: i18n.t('metaHomeTitle'),
-      },
-      {
-        name: 'twitter:description',
-        content: i18n.t('metaHomeDescription'),
-      },
-    ],
-    links: [
-      {
-        rel: 'canonical',
-        href: 'https://nimbi.gr/',
-      },
-    ],
-  }),
+      inLanguage: ['en', 'el'],
+    }
+
+    return {
+      meta: [
+        {
+          title,
+        },
+        {
+          name: 'description',
+          content: description,
+        },
+        {
+          property: 'og:title',
+          content: title,
+        },
+        {
+          property: 'og:description',
+          content: description,
+        },
+        {
+          property: 'og:url',
+          content: 'https://nimbi.gr/',
+        },
+        {
+          name: 'twitter:title',
+          content: title,
+        },
+        {
+          name: 'twitter:description',
+          content: description,
+        },
+      ],
+      links: [
+        {
+          rel: 'canonical',
+          href: 'https://nimbi.gr/',
+        },
+      ],
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify(jsonLd),
+        },
+      ],
+    }
+  },
   component: HomePage,
 })
 
