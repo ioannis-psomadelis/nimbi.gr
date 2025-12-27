@@ -1,5 +1,5 @@
 import { type ModelId } from '../../../types/models'
-import { type ChartParamId } from '../../../lib/utils/runs'
+import type { ChartParamId } from '../../../lib/utils/runs'
 
 // Model-specific hour step configuration
 export const MODEL_HOUR_CONFIG: Record<ModelId, { step: number; min: number; max: number }> = {
@@ -8,9 +8,6 @@ export const MODEL_HOUR_CONFIG: Record<ModelId, { step: number; min: number; max
   gem: { step: 6, min: 6, max: 240 },
   ukmo: { step: 6, min: 6, max: 144 },
 }
-
-// ECMWF HRES has full parameter support for all regions
-export const ECMWF_REGIONAL_SUPPORTED_PARAMS: ChartParamId[] = ['0', '1', '14']
 
 // Snap hour to nearest valid step for a model
 export function snapToValidHour(hour: number, model: ModelId): number {
@@ -37,6 +34,8 @@ export interface RunImageViewerProps {
   model: ModelId
   latitude?: number
   longitude?: number
+  onForecastHourChange?: (hour: number) => void
+  forecastHourRef?: React.MutableRefObject<{ goToPrevious: () => void; goToNext: () => void } | null>
 }
 
 export interface ForecastDateTime {

@@ -24,6 +24,7 @@ export const el: TranslationKeys = {
     cloudy: '\u03C3\u03C5\u03BD\u03BD\u03B5\u03C6\u03B9\u03B1\u03C3\u03BC\u03AD\u03BD\u03BF\u03C2',
     rainy: '\u03B2\u03C1\u03BF\u03C7\u03B5\u03C1\u03CC\u03C2',
     stormy: '\u03BA\u03B1\u03C4\u03B1\u03B9\u03B3\u03B9\u03B4\u03CE\u03B4\u03B7\u03C2',
+    snowy: 'χιονόπτωση',
   } as Record<WeatherCondition, string>,
 
   // Condition descriptions
@@ -33,6 +34,7 @@ export const el: TranslationKeys = {
     cloudy: '\u03C3\u03C5\u03BD\u03BD\u03B5\u03C6\u03B9\u03B1\u03C3\u03BC\u03AD\u03BD\u03BF\u03C2 \u03BF\u03C5\u03C1\u03B1\u03BD\u03CC\u03C2',
     rainy: '\u03B1\u03BD\u03B1\u03BC\u03AD\u03BD\u03BF\u03BD\u03C4\u03B1\u03B9 \u03B2\u03C1\u03BF\u03C7\u03AD\u03C2',
     stormy: '\u03BA\u03B1\u03C4\u03B1\u03B9\u03B3\u03B9\u03B4\u03CE\u03B4\u03B5\u03B9\u03C2 \u03C3\u03C5\u03BD\u03B8\u03AE\u03BA\u03B5\u03C2',
+    snowy: 'αναμένεται χιόνι',
   } as Record<WeatherCondition, string>,
 
   // Temperature trends
@@ -72,6 +74,9 @@ export const el: TranslationKeys = {
     rainExpected: '\u0391\u03BD\u03B1\u03BC\u03AD\u03BD\u03BF\u03BD\u03C4\u03B1\u03B9 \u03B2\u03C1\u03BF\u03C7\u03AD\u03C2 ({amount}mm)',
     lightRain: '\u03A0\u03B9\u03B8\u03B1\u03BD\u03AE \u03B5\u03BB\u03B1\u03C6\u03C1\u03B9\u03AC \u03B2\u03C1\u03BF\u03C7\u03AE',
     heavyRain: '\u0388\u03BD\u03C4\u03BF\u03BD\u03B7 \u03B2\u03C1\u03BF\u03C7\u03CC\u03C0\u03C4\u03C9\u03C3\u03B7 \u03C0\u03B9\u03B8\u03B1\u03BD\u03AE ({amount}mm)',
+    snowExpected: 'Αναμένεται χιόνι ({amount}mm)',
+    lightSnow: 'Πιθανή ελαφριά χιονόπτωση',
+    heavySnow: 'Έντονη χιονόπτωση πιθανή ({amount}mm)',
     noRain: '\u0391\u03BD\u03B1\u03BC\u03AD\u03BD\u03BF\u03BD\u03C4\u03B1\u03B9 \u03BE\u03B7\u03C1\u03AD\u03C2 \u03C3\u03C5\u03BD\u03B8\u03AE\u03BA\u03B5\u03C2',
 
     // Model agreement

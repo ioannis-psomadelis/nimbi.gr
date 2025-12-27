@@ -16,11 +16,13 @@ const PRIMARY_MODEL: ModelId = 'ecmwf-hres'
 const DAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 /**
- * Determine weather condition from cloud cover and precipitation
+ * Determine weather condition from cloud cover, precipitation and temperature
+ * When temperature is below 2°C, precipitation becomes snow
  */
-function getCondition(cloudCover: number, precip: number): WeatherCondition {
-  if (precip > 10) return 'stormy'
-  if (precip > 2) return 'rainy'
+function getCondition(cloudCover: number, precip: number, temp?: number): WeatherCondition {
+  const isSnow = temp !== undefined && temp < 2
+  if (precip > 10) return isSnow ? 'snowy' : 'stormy'
+  if (precip > 2) return isSnow ? 'snowy' : 'rainy'
   if (cloudCover > 70) return 'cloudy'
   if (cloudCover > 30) return 'partly_cloudy'
   return 'sunny'
@@ -49,6 +51,7 @@ export function getWeatherIcon(condition: WeatherCondition): string {
     cloudy: '\u2601\uFE0F',
     rainy: '\uD83C\uDF27\uFE0F',
     stormy: '\u26C8\uFE0F',
+    snowy: '\uD83C\uDF28\uFE0F',
   }
   return icons[condition]
 }
@@ -77,6 +80,7 @@ function extractDailyForecast(
 
   const date = new Date(data.hourly.time[startIdx])
   const avgCloud = clouds.reduce((a, b) => a + b, 0) / clouds.length
+  const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length
   const totalPrecip = precips.reduce((a, b) => a + b, 0)
   const precipHours = precips.filter((p) => p > 0.1).length
 
@@ -87,7 +91,7 @@ function extractDailyForecast(
     tempLow: Math.round(Math.min(...temps)),
     precipTotal: Math.round(totalPrecip * 10) / 10,
     precipHours,
-    condition: getCondition(avgCloud, totalPrecip),
+    condition: getCondition(avgCloud, totalPrecip, avgTemp),
     windMax: Math.round(Math.max(...winds)),
     pressureTrend: getPressureTrend(pressures),
   }
@@ -187,6 +191,18 @@ export function analyzeWeeklyForecast(
 ): WeeklyForecast {
   const days: DayComparison[] = []
   const primaryData = modelData[PRIMARY_MODEL]
+
+  // Guard: if primary model data is missing, return empty forecast
+  if (!primaryData) {
+    return {
+      location,
+      days: [],
+      overallTrend: 'stable',
+      confidence: 'low',
+      lastUpdated: new Date(),
+      primaryModel: PRIMARY_MODEL,
+    }
+  }
 
   // Analyze 7 days
   for (let dayIdx = 0; dayIdx < 7; dayIdx++) {

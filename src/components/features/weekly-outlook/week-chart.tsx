@@ -1,4 +1,6 @@
-import { useMemo } from 'react'
+'use client'
+
+import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   AreaChart,
@@ -23,17 +25,30 @@ const COLORS = {
   text: '#9ca3af', // gray-400
 }
 
+// Locale mapping for date formatting
+const LOCALE_MAP: Record<string, string> = {
+  en: 'en-US',
+  el: 'el-GR',
+}
+
 export function WeekChart({ days }: WeekChartProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const locale = mounted ? (LOCALE_MAP[i18n.language] || 'en-US') : 'en-US'
 
   const chartData = useMemo(() => {
     return days.map((day) => ({
-      name: day.dayOfWeek.slice(0, 3),
+      name: day.date.toLocaleDateString(locale, { weekday: 'short' }),
       high: day.tempHigh,
       low: day.tempLow,
       icon: day.icon,
     }))
-  }, [days])
+  }, [days, locale])
 
   const minTemp = Math.min(...days.map((d) => d.tempLow)) - 2
   const maxTemp = Math.max(...days.map((d) => d.tempHigh)) + 2

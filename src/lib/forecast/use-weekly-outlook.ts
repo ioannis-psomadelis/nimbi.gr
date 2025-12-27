@@ -9,6 +9,8 @@ import { generateWeeklyNarrative } from './narrative'
 interface UseWeeklyOutlookOptions {
   modelData: Record<ModelId, WeatherResponse> | null
   location: string
+  lat?: number
+  lon?: number
   isLoading?: boolean
 }
 
@@ -18,11 +20,26 @@ interface UseWeeklyOutlookResult {
 }
 
 /**
+ * Format time from ISO string
+ */
+function formatSunTime(isoString: string | undefined): string | undefined {
+  if (!isoString) return undefined
+  try {
+    const date = new Date(isoString)
+    return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Hook to generate weekly outlook narrative from model data
  */
 export function useWeeklyOutlook({
   modelData,
   location,
+  lat = 0,
+  lon = 0,
   isLoading = false,
 }: UseWeeklyOutlookOptions): UseWeeklyOutlookResult {
   const { i18n } = useTranslation()
@@ -33,12 +50,25 @@ export function useWeeklyOutlook({
 
     try {
       const forecast = analyzeWeeklyForecast(modelData, location)
-      return generateWeeklyNarrative(forecast, lang)
+      const baseNarrative = generateWeeklyNarrative(forecast, lang)
+
+      // Get sunrise/sunset from primary model data
+      const primaryData = modelData['ecmwf-hres'] || Object.values(modelData)[0]
+      const sunrise = formatSunTime(primaryData?.daily?.sunrise?.[0])
+      const sunset = formatSunTime(primaryData?.daily?.sunset?.[0])
+
+      return {
+        ...baseNarrative,
+        lat,
+        lon,
+        sunrise,
+        sunset,
+      }
     } catch (error) {
       console.error('Failed to generate weekly outlook:', error)
       return null
     }
-  }, [modelData, location, lang, isLoading])
+  }, [modelData, location, lat, lon, lang, isLoading])
 
   return {
     narrative,

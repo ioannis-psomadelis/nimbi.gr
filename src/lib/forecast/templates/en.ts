@@ -23,6 +23,7 @@ export const en = {
     cloudy: 'cloudy',
     rainy: 'rainy',
     stormy: 'stormy',
+    snowy: 'snowy',
   } as Record<WeatherCondition, string>,
 
   // Condition descriptions (fuller form)
@@ -32,6 +33,7 @@ export const en = {
     cloudy: 'overcast skies',
     rainy: 'rain expected',
     stormy: 'stormy conditions',
+    snowy: 'snow expected',
   } as Record<WeatherCondition, string>,
 
   // Temperature trends
@@ -71,6 +73,9 @@ export const en = {
     rainExpected: 'Rain expected ({amount}mm)',
     lightRain: 'Light rain possible',
     heavyRain: 'Heavy rain likely ({amount}mm)',
+    snowExpected: 'Snow expected ({amount}mm)',
+    lightSnow: 'Light snow possible',
+    heavySnow: 'Heavy snow likely ({amount}mm)',
     noRain: 'Dry conditions expected',
 
     // Model agreement

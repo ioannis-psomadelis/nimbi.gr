@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback, useRef, Suspense } from 'react'
+import { useState, useMemo, useCallback, useRef, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery, HydrationBoundary, dehydrate } from '@tanstack/react-query'
-import { MenuIcon } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ModelCard } from '../components/features/model-card'
@@ -12,7 +11,7 @@ import { ComparisonChart } from '../components/features/comparison-chart'
 import { SavedLocations } from '../components/features/saved-locations'
 import { RunSelector } from '../components/features/run-selector'
 import { RunImageViewer } from '../components/features/run-image-viewer'
-import { SimpleHero, SimpleForecast } from '../components/features/simple-mode'
+import { SimpleHero, SimpleWeatherView } from '../components/features/simple-mode'
 import { MODELS, MODEL_CONFIG, type ModelId } from '../types/models'
 import { getLatestRun, getPreviousRuns, detectRegion } from '../lib/utils/runs'
 import { allModelsQueryOptions } from '../lib/api/weather'
@@ -20,10 +19,14 @@ import { getQueryClient } from '../lib/query-client'
 import { getLocationBySlug } from '../lib/server/locations'
 import { getServerSavedLocations, getServerSelectedModel, getServerProMode } from '../lib/server/storage'
 import { saveSelectedModel } from '../lib/storage'
+import { useKeyboardShortcuts } from '../hooks/use-keyboard-shortcuts'
 import type { WeatherResponse } from '../types/weather'
 import { WeeklyOutlookWidget, OutlookTrigger } from '../components/features/weekly-outlook'
+import { AirQualityCard } from '../components/features/air-quality'
+import { WeatherAlerts } from '../components/features/weather-alerts'
 import { useWeeklyOutlook } from '../lib/forecast/use-weekly-outlook'
 import { Button } from '../components/ui/button'
+import { ShareButton } from '../components/ui/share-button'
 import { ErrorBoundary } from '../components/ui/error-boundary'
 import {
   Sidebar,
@@ -54,9 +57,9 @@ export const Route = createFileRoute('/observatory/$slug')({
     // Get location, saved locations, selected model, and pro mode from server
     const [location, savedLocations, savedModel, proMode] = await Promise.all([
       getLocationBySlug({ data: params.slug }),
-      getServerSavedLocations({ data: undefined }),
-      getServerSelectedModel({ data: undefined }),
-      getServerProMode({ data: undefined }),
+      getServerSavedLocations(),
+      getServerSelectedModel(),
+      getServerProMode(),
     ])
 
     // Get QueryClient for this request (new instance on server, singleton on client)
@@ -187,9 +190,13 @@ function ChartsContent({
 function WeeklyOutlookContent({
   modelData,
   location,
+  lat,
+  lon,
 }: {
   modelData: Record<ModelId, WeatherResponse | null>
   location: string
+  lat: number
+  lon: number
 }) {
   // Filter out null values for the hook
   const validModelData = useMemo(() => {
@@ -205,6 +212,8 @@ function WeeklyOutlookContent({
   const { narrative } = useWeeklyOutlook({
     modelData: validModelData,
     location,
+    lat,
+    lon,
   })
 
   return <WeeklyOutlookWidget narrative={narrative} />
@@ -214,9 +223,13 @@ function WeeklyOutlookContent({
 function SidebarOutlookTrigger({
   modelData,
   location,
+  lat,
+  lon,
 }: {
   modelData: Record<ModelId, WeatherResponse | null>
   location: string
+  lat: number
+  lon: number
 }) {
   const validModelData = useMemo(() => {
     const result: Record<ModelId, WeatherResponse> = {} as Record<ModelId, WeatherResponse>
@@ -231,28 +244,78 @@ function SidebarOutlookTrigger({
   const { narrative } = useWeeklyOutlook({
     modelData: validModelData,
     location,
+    lat,
+    lon,
   })
 
   return <OutlookTrigger narrative={narrative} variant="sidebar" />
 }
 
-// Sidebar trigger component - shows when sidebar is closed
-function SidebarOpenTrigger() {
+// Header sidebar trigger - animates in/out based on sidebar state
+// On mobile: always visible. On desktop: hidden (sidebar always open by default).
+function HeaderSidebarTrigger() {
   const { open, setOpen, openMobile, setOpenMobile, isMobile } = useSidebar()
 
-  // Hide when sidebar is open
-  if (isMobile ? openMobile : open) return null
+  // During SSR (isMobile undefined): use CSS to show on mobile, hide on desktop
+  if (isMobile === undefined) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground md:hidden"
+        onClick={() => setOpenMobile(!openMobile)}
+      >
+        <div className="hamburger-menu" data-open={openMobile}>
+          <span />
+          <span />
+          <span />
+        </div>
+        <span className="sr-only">Toggle sidebar</span>
+      </Button>
+    )
+  }
 
+  // Mobile: always show hamburger, toggles sidebar
+  if (isMobile) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground"
+        onClick={() => setOpenMobile(!openMobile)}
+      >
+        <div className="hamburger-menu" data-open={openMobile}>
+          <span />
+          <span />
+          <span />
+        </div>
+        <span className="sr-only">Toggle sidebar</span>
+      </Button>
+    )
+  }
+
+  // Desktop: animate in/out based on sidebar state (usually hidden since sidebar is open)
   return (
-    <Button
-      variant="default"
-      size="icon"
-      className="fixed left-4 top-[72px] z-40 shadow-lg bg-primary hover:bg-primary/90"
-      onClick={() => isMobile ? setOpenMobile(true) : setOpen(true)}
+    <div
+      className={`
+        transition-all duration-300 ease-out overflow-hidden
+        ${open ? 'w-0 opacity-0' : 'w-9 opacity-100'}
+      `}
     >
-      <MenuIcon className="h-4 w-4" />
-      <span className="sr-only">Open sidebar</span>
-    </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground"
+        onClick={() => setOpen(true)}
+      >
+        <div className="hamburger-menu" data-open={open}>
+          <span />
+          <span />
+          <span />
+        </div>
+        <span className="sr-only">Open sidebar</span>
+      </Button>
+    </div>
   )
 }
 
@@ -335,25 +398,6 @@ function ObservatoryContent({
     allModelsQueryOptions(lat, lon, proMode)
   )
 
-  // Scroll state for sidebar transformation - debounced with RAF
-  const [isScrolled, setIsScrolled] = useState(false)
-  const rafRef = useRef<number | null>(null)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (rafRef.current !== null) return // Skip if already scheduled
-      rafRef.current = requestAnimationFrame(() => {
-        setIsScrolled(window.scrollY > 20)
-        rafRef.current = null
-      })
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
-    }
-  }, [])
-
   // Run state - use saved model from cookie or default to ecmwf-hres
   const [selectedModel, setSelectedModel] = useState<ModelId>(savedModel || 'ecmwf-hres')
   const currentRun = getLatestRun()
@@ -367,200 +411,222 @@ function ObservatoryContent({
     saveSelectedModel(model)
   }, [])
 
+  // Ref for keyboard navigation of forecast hours
+  const forecastHourRef = useRef<{ goToPrevious: () => void; goToNext: () => void } | null>(null)
+
+  // Keyboard shortcuts for pro mode
+  useKeyboardShortcuts({
+    enabled: proMode,
+    onPreviousHour: () => forecastHourRef.current?.goToPrevious(),
+    onNextHour: () => forecastHourRef.current?.goToNext(),
+    onModelChange: handleModelSelect,
+    currentModel: selectedModel,
+  })
+
   // Simple mode layout - only shows ECMWF HRES data in a clean interface
   if (!proMode) {
     return (
-      <>
-        <Header proMode={proMode} />
-        <div className="pt-14 min-h-screen">
-          <SidebarProvider defaultOpen={true}>
-            {/* Sidebar open trigger - shows when closed */}
-            <SidebarOpenTrigger />
+      <SidebarProvider defaultOpen={true}>
+        <Sidebar collapsible="offcanvas" className="!top-14">
+          {/* Top Header with Toggle */}
+          <SidebarHeader className="flex-row items-center justify-between p-3 border-b border-border">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+              {t('stormObservatory')}
+            </span>
+            <SidebarTrigger className="w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" />
+          </SidebarHeader>
 
-            <Sidebar
-              collapsible="offcanvas"
-              className={`
-                will-change-transform transition-all duration-300 ease-out overflow-hidden
-                ${isScrolled
-                  ? 'md:top-[72px] md:left-4 md:rounded-xl md:border md:border-border md:max-h-[calc(100vh-144px)] md:h-auto top-14 bottom-0'
-                  : 'top-14 bottom-0'
-                }
-              `}
-            >
-              {/* Top Header with Toggle */}
-              <SidebarHeader className="flex-row items-center justify-between p-3 border-b border-border">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-                  {t('stormObservatory')}
-                </span>
-                <SidebarTrigger className="w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" />
-              </SidebarHeader>
+          <SidebarContent className="pt-2">
+            {/* Location Info */}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <div className="relative overflow-hidden rounded-xl bg-muted/50 border border-border p-4">
+                  {/* Decorative Element */}
+                  <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary/10 blur-2xl" />
 
-              <SidebarContent className="pt-2">
-                {/* Location Info */}
-                <SidebarGroup>
-                  <SidebarGroupContent>
-                    <div className="relative overflow-hidden rounded-xl bg-muted/50 border border-border p-4">
-                      {/* Decorative Element */}
-                      <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary/10 blur-2xl" />
-
-                      <div className="relative">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-lg">{countryCodeToFlag(country)}</span>
-                          <h2 className="text-lg font-semibold text-foreground">
-                            {name}
-                          </h2>
-                        </div>
-                        {nameLocal && (
-                          <p className="text-sm text-muted-foreground mb-1">
-                            {nameLocal}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground font-mono">
-                          {region === 'europe' ? t('europeanRegion') : t('northAmericanRegion')}
-                        </p>
-
-                        {/* Live Indicator */}
-                        <div className="flex items-center gap-1.5 mt-3">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('live')}</span>
-                        </div>
-                      </div>
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-lg">{countryCodeToFlag(country)}</span>
+                      <h2 className="text-lg font-semibold text-foreground">
+                        {name}
+                      </h2>
                     </div>
-                  </SidebarGroupContent>
-                </SidebarGroup>
+                    {nameLocal && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        {nameLocal}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground font-mono">
+                      {region === 'europe' ? t('europeanRegion') : t('northAmericanRegion')}
+                    </p>
 
-                {/* Saved Locations */}
-                <SidebarGroup>
-                  <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    {t('savedLocations')}
-                  </SidebarGroupLabel>
-                  <SidebarGroupContent>
-                    <SavedLocations currentLat={lat} currentLon={lon} currentName={nameLocal || name} initialLocations={savedLocations} />
-                  </SidebarGroupContent>
-                </SidebarGroup>
-
-                {/* Weekly Outlook in Sidebar */}
-                <SidebarGroup>
-                  <SidebarGroupContent>
-                    <SidebarOutlookTrigger modelData={modelData} location={name} />
-                  </SidebarGroupContent>
-                </SidebarGroup>
-
-              </SidebarContent>
-            </Sidebar>
-
-            <SidebarInset className="bg-background">
-              {/* Main Content - Simple Mode */}
-              <main className="flex-1 overflow-auto">
-                {/* Hero Section with Current Weather */}
-                <section className="relative overflow-hidden border-b border-border">
-                  {/* Subtle Background */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-50" />
-
-                  <div className="relative p-4 sm:p-6 lg:p-8">
-                    {modelData['ecmwf-hres'] && <SimpleHero data={modelData['ecmwf-hres']} />}
+                    {/* Live Indicator and Share */}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('live')}</span>
+                      </div>
+                      <ShareButton
+                        title={`${name} - ${t('weatherObservatory')}`}
+                        text={t('shareForecastText', { location: name, defaultValue: `Weather forecast for ${name}` })}
+                      />
+                    </div>
                   </div>
-                </section>
+                </div>
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-                {/* 7-Day Forecast Section */}
-                <section className="p-4 sm:p-6 lg:p-8">
-                  {modelData['ecmwf-hres'] && <SimpleForecast data={modelData['ecmwf-hres']} />}
-                </section>
-              </main>
-            </SidebarInset>
-          </SidebarProvider>
-        </div>
+            {/* Saved Locations */}
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                {t('savedLocations')}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SavedLocations currentLat={lat} currentLon={lon} currentName={nameLocal || name} initialLocations={savedLocations} />
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-        {/* Weekly Outlook Widget */}
-        <WeeklyOutlookContent modelData={modelData} location={name} />
+            {/* Weekly Outlook in Sidebar */}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarOutlookTrigger modelData={modelData} location={name} lat={lat} lon={lon} />
+              </SidebarGroupContent>
+            </SidebarGroup>
 
-        <Footer />
-      </>
+            {/* Air Quality in Sidebar */}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <AirQualityCard lat={lat} lon={lon} variant="sidebar" />
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            {/* Weather Alerts in Sidebar */}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <WeatherAlerts countryCode={country} lat={lat} lon={lon} locationName={name} compact />
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+          </SidebarContent>
+        </Sidebar>
+
+        <SidebarInset className="pt-14 bg-background">
+          <Header proMode={proMode} leftSlot={<HeaderSidebarTrigger />} />
+          {/* Main Content - Simple Mode */}
+          <main className="flex-1 min-w-0 overflow-auto">
+            {/* Hero Section with Current Weather */}
+            <section className="relative overflow-hidden border-b border-border">
+              {/* Subtle Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-50" />
+
+              <div className="relative p-4 sm:p-6 lg:p-8">
+                {modelData['ecmwf-hres'] && <SimpleHero data={modelData['ecmwf-hres']} />}
+              </div>
+            </section>
+
+            {/* Connected Hourly + 7-Day Forecast */}
+            <section className="min-w-0 p-4 sm:p-6 lg:p-8">
+              {modelData['ecmwf-hres'] && <SimpleWeatherView data={modelData['ecmwf-hres']} />}
+            </section>
+          </main>
+
+          {/* Weekly Outlook Widget */}
+          <WeeklyOutlookContent modelData={modelData} location={name} lat={lat} lon={lon} />
+
+          <Footer />
+        </SidebarInset>
+      </SidebarProvider>
     )
   }
 
   // Pro mode layout - full feature set with all models
   return (
-    <>
-      <Header proMode={proMode} />
-      <div className="pt-14 min-h-screen">
-        <SidebarProvider defaultOpen={true}>
-          {/* Sidebar open trigger - shows when closed */}
-          <SidebarOpenTrigger />
+    <SidebarProvider defaultOpen={true}>
+      <Sidebar collapsible="offcanvas" className="!top-14">
+        {/* Top Header with Toggle */}
+        <SidebarHeader className="flex-row items-center justify-between p-3 border-b border-border">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+            {t('stormObservatory')}
+          </span>
+          <SidebarTrigger className="w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" />
+        </SidebarHeader>
 
-          <Sidebar
-            collapsible="offcanvas"
-            className={`
-              will-change-transform transition-all duration-300 ease-out overflow-hidden
-              ${isScrolled
-                ? 'md:top-[72px] md:left-4 md:rounded-xl md:border md:border-border md:max-h-[calc(100vh-144px)] md:h-auto top-14 bottom-0'
-                : 'top-14 bottom-0'
-              }
-            `}
-          >
-            {/* Top Header with Toggle */}
-            <SidebarHeader className="flex-row items-center justify-between p-3 border-b border-border">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
-                {t('stormObservatory')}
-              </span>
-              <SidebarTrigger className="w-7 h-7 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors" />
-            </SidebarHeader>
+        <SidebarContent className="pt-2">
+          {/* Location Info */}
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <div className="relative overflow-hidden rounded-xl bg-muted/50 border border-border p-4">
+                {/* Decorative Element */}
+                <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary/10 blur-2xl" />
 
-            <SidebarContent className="pt-2">
-              {/* Location Info */}
-              <SidebarGroup>
-                <SidebarGroupContent>
-                  <div className="relative overflow-hidden rounded-xl bg-muted/50 border border-border p-4">
-                    {/* Decorative Element */}
-                    <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-primary/10 blur-2xl" />
-
-                    <div className="relative">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg">{countryCodeToFlag(country)}</span>
-                        <h2 className="text-lg font-semibold text-foreground">
-                          {name}
-                        </h2>
-                      </div>
-                      {nameLocal && (
-                        <p className="text-sm text-muted-foreground mb-1">
-                          {nameLocal}
-                        </p>
-                      )}
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {region === 'europe' ? t('europeanRegion') : t('northAmericanRegion')}
-                      </p>
-
-                      {/* Live Indicator */}
-                      <div className="flex items-center gap-1.5 mt-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('live')}</span>
-                      </div>
-                    </div>
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">{countryCodeToFlag(country)}</span>
+                    <h2 className="text-lg font-semibold text-foreground">
+                      {name}
+                    </h2>
                   </div>
-                </SidebarGroupContent>
-              </SidebarGroup>
+                  {nameLocal && (
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {nameLocal}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {region === 'europe' ? t('europeanRegion') : t('northAmericanRegion')}
+                  </p>
 
-              {/* Saved Locations */}
-              <SidebarGroup>
-                <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                  {t('savedLocations')}
-                </SidebarGroupLabel>
-                <SidebarGroupContent>
-                  <SavedLocations currentLat={lat} currentLon={lon} currentName={nameLocal || name} initialLocations={savedLocations} />
-                </SidebarGroupContent>
-              </SidebarGroup>
+                  {/* Live Indicator and Share */}
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{t('live')}</span>
+                    </div>
+                    <ShareButton
+                      title={`${name} - ${t('weatherObservatory')}`}
+                      text={t('shareForecastText', { location: name, defaultValue: `Weather forecast for ${name}` })}
+                    />
+                  </div>
+                </div>
+              </div>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-              {/* Weekly Outlook in Sidebar */}
-              <SidebarGroup>
-                <SidebarGroupContent>
-                  <SidebarOutlookTrigger modelData={modelData} location={name} />
-                </SidebarGroupContent>
-              </SidebarGroup>
+          {/* Saved Locations */}
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              {t('savedLocations')}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SavedLocations currentLat={lat} currentLon={lon} currentName={nameLocal || name} initialLocations={savedLocations} />
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-            </SidebarContent>
-          </Sidebar>
+          {/* Weekly Outlook in Sidebar */}
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarOutlookTrigger modelData={modelData} location={name} lat={lat} lon={lon} />
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-      <SidebarInset className="bg-background">
+          {/* Air Quality in Sidebar */}
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <AirQualityCard lat={lat} lon={lon} variant="sidebar" />
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          {/* Weather Alerts in Sidebar */}
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <WeatherAlerts countryCode={country} lat={lat} lon={lon} locationName={name} compact />
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+        </SidebarContent>
+      </Sidebar>
+
+      <SidebarInset className="pt-14 bg-background">
+        <Header proMode={proMode} leftSlot={<HeaderSidebarTrigger />} />
         {/* Main Content */}
         <main className="flex-1 overflow-auto">
           {/* Hero Section with Model Cards */}
@@ -620,7 +686,7 @@ function ObservatoryContent({
                 />
               </div>
 
-              <RunImageViewer runId={selectedRun.id} model={selectedModel} latitude={lat} longitude={lon} />
+              <RunImageViewer runId={selectedRun.id} model={selectedModel} latitude={lat} longitude={lon} forecastHourRef={forecastHourRef} />
             </div>
 
             {/* Right Column - Comparison Charts */}
@@ -651,13 +717,12 @@ function ObservatoryContent({
             </div>
           </div>
         </main>
-        </SidebarInset>
-      </SidebarProvider>
-      </div>
-      {/* Weekly Outlook Widget */}
-      <WeeklyOutlookContent modelData={modelData} location={name} />
 
-      <Footer />
-    </>
+        {/* Weekly Outlook Widget */}
+        <WeeklyOutlookContent modelData={modelData} location={name} lat={lat} lon={lon} />
+
+        <Footer />
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

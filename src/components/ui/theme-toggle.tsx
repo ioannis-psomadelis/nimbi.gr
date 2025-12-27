@@ -1,6 +1,7 @@
 'use client'
 
 import { useTheme } from '@/hooks/use-theme'
+import { cn } from '@/lib/utils'
 
 export function ThemeToggle() {
   const { resolvedTheme, toggleTheme } = useTheme()
@@ -8,14 +9,15 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="
-        relative w-9 h-9 rounded-lg
-        bg-muted hover:bg-secondary
-        border border-border
-        transition-all duration-200
-        flex items-center justify-center
-        group
-      "
+      className={cn(
+        'relative rounded-xl',
+        'bg-muted hover:bg-secondary',
+        'border border-border',
+        'transition-all duration-200',
+        'flex items-center justify-center',
+        'group',
+        'w-9 h-9'
+      )}
       aria-label={`Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {/* Sun icon (shown in dark mode) */}

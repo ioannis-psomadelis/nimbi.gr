@@ -3,11 +3,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { type RunInfo, getNextRunTime } from '../../lib/utils/runs'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '../ui/tooltip'
+import { InfoButton } from '../ui/info-button'
 
 interface RunSelectorProps {
   currentRun: RunInfo
@@ -31,30 +27,18 @@ export const RunSelector = memo(function RunSelector({
       {/* Run Timeline with Info */}
       <div className="relative">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {/* Info Button with Tooltip */}
-          <Tooltip delayDuration={100}>
-            <TooltipTrigger asChild>
-              <button
-                className="w-8 h-8 rounded-lg bg-muted/50 border border-border hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
-                aria-label={t('runTimingInfo')}
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-64 p-3">
-              <p className="mb-2">{t('runInfoTooltip')}</p>
-              <div className="flex items-center gap-2 text-primary">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="font-medium">
-                  {t('nextRunAvailable')}: {nextRun.hours}h {nextRun.minutes}m
-                </span>
-              </div>
-            </TooltipContent>
-          </Tooltip>
+          {/* Info Button */}
+          <InfoButton title={t('runTimingInfo')}>
+            <p className="mb-2">{t('runInfoTooltip')}</p>
+            <div className="flex items-center gap-2 text-primary">
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium">
+                {t('nextRunAvailable')}: {nextRun.hours}h {nextRun.minutes}m
+              </span>
+            </div>
+          </InfoButton>
           {allRuns.map((run, index) => {
             const isSelected = selectedRun.id === run.id
             const isLatest = index === 0

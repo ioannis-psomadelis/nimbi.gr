@@ -24,11 +24,12 @@ export function ProToggle({ enabled, onToggle, isLoading }: ProToggleProps) {
           onClick={() => !isLoading && onToggle(!enabled)}
           disabled={isLoading}
           className={cn(
-            // Base styles matching language toggle
-            'relative h-9 px-2.5 rounded-lg',
+            // Base styles
+            'relative rounded-xl',
             'border border-border',
             'transition-all duration-200',
-            'flex items-center gap-2',
+            'flex items-center',
+            'h-9 px-2.5 gap-2',
             // Background based on state
             enabled
               ? 'bg-primary/15 border-primary/30 hover:bg-primary/20'
@@ -41,17 +42,17 @@ export function ProToggle({ enabled, onToggle, isLoading }: ProToggleProps) {
           aria-label={t('proModeLabel')}
           aria-pressed={enabled}
         >
-          {/* PRO text with two lines */}
-          <div className="flex flex-col items-center leading-none">
+          {/* PRO mode text */}
+          <div className="flex flex-col items-start leading-none">
             <span
               className={cn(
-                'text-[11px] font-bold tracking-wider',
+                'font-bold tracking-wider text-[11px]',
                 enabled ? 'text-primary' : 'text-foreground'
               )}
             >
               PRO
             </span>
-            <span className="text-[8px] text-muted-foreground font-medium -mt-0.5">
+            <span className="font-medium tracking-wide text-muted-foreground text-[9px]">
               mode
             </span>
           </div>
@@ -59,8 +60,8 @@ export function ProToggle({ enabled, onToggle, isLoading }: ProToggleProps) {
           {/* Switch indicator */}
           <div
             className={cn(
-              'relative w-7 h-4 rounded-full transition-colors duration-200',
-              'border',
+              'relative rounded-full transition-colors duration-200',
+              'border w-7 h-4',
               enabled
                 ? 'bg-primary border-primary'
                 : 'bg-muted-foreground/20 border-border'
@@ -69,7 +70,7 @@ export function ProToggle({ enabled, onToggle, isLoading }: ProToggleProps) {
             {/* Thumb */}
             <span
               className={cn(
-                'absolute top-0.5 left-0.5 w-2.5 h-2.5 rounded-full bg-white',
+                'absolute rounded-full bg-white top-0.5 left-0.5 w-2.5 h-2.5',
                 'transform transition-transform duration-200 shadow-sm',
                 enabled ? 'translate-x-3' : 'translate-x-0',
                 isLoading && 'animate-pulse'

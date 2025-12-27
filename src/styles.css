@@ -845,3 +845,68 @@ textarea {
 [aria-disabled="true"] {
   cursor: not-allowed;
 }
+
+/* ========================================
+   ANIMATED HAMBURGER MENU
+======================================== */
+.hamburger-menu {
+  width: 20px;
+  height: 14px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-menu span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: currentColor;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  transform-origin: center;
+}
+
+/* Animated to X when open */
+.hamburger-menu[data-open="true"] span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.hamburger-menu[data-open="true"] span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger-menu[data-open="true"] span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Hover effect when closed */
+.hamburger-menu:not([data-open="true"]):hover span:nth-child(1) {
+  transform: translateY(-1px);
+}
+
+.hamburger-menu:not([data-open="true"]):hover span:nth-child(3) {
+  transform: translateY(1px);
+}
+
+/* Alternative: Squeeze animation */
+.hamburger-squeeze span {
+  transition: all 0.25s ease-out;
+}
+
+.hamburger-squeeze[data-open="true"] span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+  width: 100%;
+}
+
+.hamburger-squeeze[data-open="true"] span:nth-child(2) {
+  transform: scaleX(0);
+  opacity: 0;
+}
+
+.hamburger-squeeze[data-open="true"] span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+  width: 100%;
+}

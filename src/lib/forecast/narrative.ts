@@ -41,13 +41,18 @@ function generateDayDetails(day: DayComparison, lang: Language): string {
   const t = translations[lang]
   const parts: string[] = []
 
-  // Precipitation info
+  // Check if cold enough for snow (below 2°C)
+  const isSnow = day.primary.tempHigh < 2
+
+  // Precipitation info - use snow templates when cold
   if (day.primary.precipTotal > 10) {
-    parts.push(t.templates.heavyRain.replace('{amount}', day.primary.precipTotal.toString()))
+    const template = isSnow ? t.templates.heavySnow : t.templates.heavyRain
+    parts.push(template.replace('{amount}', day.primary.precipTotal.toString()))
   } else if (day.primary.precipTotal > 2) {
-    parts.push(t.templates.rainExpected.replace('{amount}', day.primary.precipTotal.toString()))
+    const template = isSnow ? t.templates.snowExpected : t.templates.rainExpected
+    parts.push(template.replace('{amount}', day.primary.precipTotal.toString()))
   } else if (day.primary.precipTotal > 0.5) {
-    parts.push(t.templates.lightRain)
+    parts.push(isSnow ? t.templates.lightSnow : t.templates.lightRain)
   }
 
   // Model agreement
@@ -132,16 +137,14 @@ function generateWeeklySummary(forecast: WeeklyForecast, lang: Language): string
   // Trend
   parts.push(t.trends[forecast.overallTrend])
 
-  // Look for significant weather events
-  const rainyDays = forecast.days.filter((d) => d.primary.precipTotal > 5)
-  if (rainyDays.length > 0) {
-    const rainyDay = rainyDays[0]
-    const dayName = getLocalizedDayName(rainyDay.date, rainyDay.dayOfWeek, lang)
-    parts.push(
-      t.templates.rainExpected
-        .replace('{amount}', rainyDay.primary.precipTotal.toString())
-        .replace('({amount}mm)', `${dayName}`)
-    )
+  // Look for significant weather events (precipitation)
+  const precipDays = forecast.days.filter((d) => d.primary.precipTotal > 5)
+  if (precipDays.length > 0) {
+    const precipDay = precipDays[0]
+    // Check if cold enough for snow (below 2°C)
+    const isSnow = precipDay.primary.tempHigh < 2
+    const template = isSnow ? t.templates.snowExpected : t.templates.rainExpected
+    parts.push(template.replace('{amount}', precipDay.primary.precipTotal.toString()))
   }
 
   return parts.join('. ') + '.'

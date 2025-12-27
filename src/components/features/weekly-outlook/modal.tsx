@@ -1,11 +1,12 @@
 import * as Dialog from '@radix-ui/react-dialog'
-import { X, ChevronDown, Download } from 'lucide-react'
+import { X, ChevronDown, Download, Sunrise, Sunset } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useRef, useCallback, useState } from 'react'
 import type { WeeklyNarrative } from '../../../lib/forecast/types'
 import { DayCard } from './day-card'
 import { WeekChart } from './week-chart'
 import { ConfidenceIndicator } from './confidence-indicator'
+import { AirQualityCard } from '../air-quality'
 
 interface OutlookModalProps {
   open: boolean
@@ -24,7 +25,7 @@ export function OutlookModal({ open, onOpenChange, narrative, fullScreen }: Outl
 
     setIsDownloading(true)
     try {
-      const { toJpeg } = await import('html-to-image')
+      const { toPng } = await import('html-to-image')
 
       // Get computed styles to inline them for the capture
       const computedStyle = getComputedStyle(document.documentElement)
@@ -44,16 +45,14 @@ export function OutlookModal({ open, onOpenChange, narrative, fullScreen }: Outl
         return `#${f(0)}${f(8)}${f(4)}`
       }
 
-      const dataUrl = await toJpeg(contentRef.current, {
-        quality: 0.95,
+      // Use PNG for lossless quality, higher pixel ratio for sharper images
+      const dataUrl = await toPng(contentRef.current, {
         backgroundColor: hslToRgb(bgColor),
-        pixelRatio: 2,
+        pixelRatio: 3, // Higher for better quality on retina displays
         style: {
-          // Ensure proper rendering
           transform: 'none',
         },
         filter: (node) => {
-          // Exclude elements with data-exclude-capture attribute
           if (node instanceof Element && node.hasAttribute('data-exclude-capture')) {
             return false
           }
@@ -62,7 +61,7 @@ export function OutlookModal({ open, onOpenChange, narrative, fullScreen }: Outl
       })
 
       const link = document.createElement('a')
-      link.download = `nimbi-forecast-${narrative.location.replace(/\s+/g, '-').toLowerCase()}.jpg`
+      link.download = `nimbi-forecast-${narrative.location.replace(/\s+/g, '-').toLowerCase()}.png`
       link.href = dataUrl
       link.click()
     } catch (error) {
@@ -157,6 +156,30 @@ export function OutlookModal({ open, onOpenChange, narrative, fullScreen }: Outl
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Sunrise/Sunset + Air Quality Row */}
+              <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/50">
+                {/* Sunrise */}
+                {narrative.sunrise && (
+                  <div className="flex items-center gap-2">
+                    <Sunrise className="h-4 w-4 text-amber-500" />
+                    <span className="text-sm font-medium text-foreground">{narrative.sunrise}</span>
+                  </div>
+                )}
+                {/* Sunset */}
+                {narrative.sunset && (
+                  <div className="flex items-center gap-2">
+                    <Sunset className="h-4 w-4 text-orange-500" />
+                    <span className="text-sm font-medium text-foreground">{narrative.sunset}</span>
+                  </div>
+                )}
+                {/* Spacer */}
+                <div className="flex-1" />
+                {/* Air Quality inline */}
+                {narrative.lat && narrative.lon && (
+                  <AirQualityCard lat={narrative.lat} lon={narrative.lon} variant="inline" />
+                )}
               </div>
 
               {/* Temperature Chart - Desktop only */}

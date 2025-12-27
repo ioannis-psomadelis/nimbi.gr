@@ -1,2 +1,2 @@
 export { SimpleHero } from './simple-hero'
-export { SimpleForecast } from './simple-forecast'
+export { SimpleWeatherView } from './simple-weather-view'

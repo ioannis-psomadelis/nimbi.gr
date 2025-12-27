@@ -1,6 +1,6 @@
 import type { ModelId } from '../../types/models'
 
-export type WeatherCondition = 'sunny' | 'partly_cloudy' | 'cloudy' | 'rainy' | 'stormy'
+export type WeatherCondition = 'sunny' | 'partly_cloudy' | 'cloudy' | 'rainy' | 'stormy' | 'snowy'
 export type PressureTrend = 'rising' | 'falling' | 'stable'
 export type TemperatureTrend = 'warming' | 'cooling' | 'stable'
 export type ConfidenceLevel = 'high' | 'medium' | 'low'
@@ -58,10 +58,14 @@ export interface NarrativeDay {
 
 export interface WeeklyNarrative {
   location: string
+  lat?: number
+  lon?: number
   summary: string
   days: NarrativeDay[]
   confidence: ConfidenceLevel
   confidenceText: string
   lastUpdated: Date
   primaryModelName: string
+  sunrise?: string
+  sunset?: string
 }

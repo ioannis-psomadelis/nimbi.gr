@@ -72,43 +72,74 @@ export function SavedLocations({ currentLat, currentLon, currentName, initialLoc
         <p className="text-muted-foreground text-xs px-1">{t('noSavedLocations')}</p>
       ) : (
         <div className="space-y-1">
-          {locations.map((location) => (
-            <div
-              key={location.id}
-              className="group flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              {/* Bookmark icon */}
-              <div className="w-6 h-6 rounded-md bg-muted flex items-center justify-center shrink-0">
-                <svg className="w-3 h-3 text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                </svg>
-              </div>
+          {locations.map((location) => {
+            const isActive = location.lat === currentLat && location.lon === currentLon
 
-              {/* Location info */}
-              <button
+            return (
+              <div
+                key={location.id}
+                className={`
+                  group/item relative flex items-center gap-2.5 px-2.5 py-2 rounded-xl
+                  transition-all duration-200 cursor-pointer
+                  ${isActive
+                    ? 'bg-primary/10 ring-1 ring-primary/20'
+                    : 'hover:bg-muted/70'
+                  }
+                `}
                 onClick={() => handleNavigateToLocation(location)}
-                className="flex-1 text-left min-w-0"
               >
-                <p className="text-sm font-medium text-foreground truncate">
-                  {location.name}
-                </p>
-                <p className="text-[10px] text-muted-foreground font-mono">
-                  {location.lat.toFixed(2)}°, {location.lon.toFixed(2)}°
-                </p>
-              </button>
+                {/* Active indicator */}
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full" />
+                )}
 
-              {/* Remove button */}
-              <button
-                onClick={() => handleRemove(location.id)}
-                className="w-6 h-6 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all shrink-0"
-                aria-label={t('removeLocation')}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          ))}
+                {/* Bookmark icon */}
+                <div className={`
+                  w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors
+                  ${isActive
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-muted text-muted-foreground group-hover/item:bg-muted-foreground/20 group-hover/item:text-foreground'
+                  }
+                `}>
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                  </svg>
+                </div>
+
+                {/* Location info */}
+                <div className="flex-1 min-w-0">
+                  <p className={`
+                    text-sm font-medium truncate transition-colors
+                    ${isActive ? 'text-primary' : 'text-foreground'}
+                  `}>
+                    {location.name}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground font-mono">
+                    {location.lat.toFixed(2)}°, {location.lon.toFixed(2)}°
+                  </p>
+                </div>
+
+                {/* Remove button - only visible on item hover */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleRemove(location.id)
+                  }}
+                  className={`
+                    w-6 h-6 rounded-md flex items-center justify-center shrink-0
+                    opacity-0 group-hover/item:opacity-100
+                    text-muted-foreground hover:text-destructive hover:bg-destructive/10
+                    transition-all duration-150
+                  `}
+                  aria-label={t('removeLocation')}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

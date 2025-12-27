@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { changeLanguage } from '@/lib/i18n'
+import { cn } from '@/lib/utils'
 
 const languages = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
@@ -36,15 +37,16 @@ export function LanguageToggle() {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`
-          relative h-9 px-2 md:px-3 rounded-lg
-          bg-muted hover:bg-secondary
-          border border-border
-          transition-all duration-200
-          flex items-center gap-2
-          text-sm font-medium text-foreground
-          ${isOpen ? 'ring-2 ring-primary/30' : ''}
-        `}
+        className={cn(
+          'relative rounded-xl',
+          'bg-muted hover:bg-secondary',
+          'border border-border',
+          'transition-all duration-200',
+          'flex items-center',
+          'text-sm font-medium text-foreground',
+          'h-9 px-3 gap-2',
+          isOpen && 'ring-2 ring-primary/30'
+        )}
         aria-label="Select language"
         aria-expanded={isOpen}
       >
@@ -52,7 +54,7 @@ export function LanguageToggle() {
         <span className="text-base md:hidden">{currentLang.flag}</span>
         <span className="hidden md:inline text-sm">{currentLang.nativeName}</span>
         <svg
-          className={`w-3 h-3 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={cn('text-muted-foreground transition-transform duration-200 w-3 h-3', isOpen && 'rotate-180')}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

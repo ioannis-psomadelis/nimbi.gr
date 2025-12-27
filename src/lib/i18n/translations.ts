@@ -19,7 +19,10 @@ export const translations = {
 
       // Weather
       forecast: 'Forecast',
+      sevenDayForecast: '7-Day Forecast',
       forecastFor: 'Forecast for',
+      humidity: 'Humidity',
+      next24h: 'Next 24h',
       loading: 'Loading...',
       updating: 'Updating...',
       loadingChart: 'Loading chart...',
@@ -177,6 +180,7 @@ export const translations = {
 
       // Simple Mode
       today: 'Today',
+      now: 'Now',
       feelsLike: 'Feels like',
       kmh: 'km/h',
       conditionSunny: 'Sunny',
@@ -184,6 +188,23 @@ export const translations = {
       conditionCloudy: 'Cloudy',
       conditionRainy: 'Rainy',
       conditionStormy: 'Stormy',
+      conditionSnowy: 'Snowy',
+
+      // UV Index
+      uvIndex: 'UV Index',
+      uvLow: 'Low',
+      uvModerate: 'Moderate',
+      uvHigh: 'High',
+      uvVeryHigh: 'Very High',
+      uvExtreme: 'Extreme',
+
+      // Precipitation
+      precipChance: 'Rain chance',
+      precipProbability: 'Precipitation',
+
+      // Sun Times
+      sunrise: 'Sunrise',
+      sunset: 'Sunset',
 
       // Pro Mode
       proModeLabel: 'Pro Mode',
@@ -219,6 +240,58 @@ export const translations = {
       metaObservatoryTitle: '{{location}} Weather Forecast | nimbi.gr',
       metaObservatoryDescription: '7-day weather forecast for {{location}} comparing ECMWF, GFS, GEM & UKMO models',
       meta404Title: 'Page Not Found | nimbi.gr',
+
+      // Air Quality
+      airQuality: 'Air Quality',
+      aqiGood: 'Good',
+      aqiFair: 'Fair',
+      aqiModerate: 'Moderate',
+      aqiPoor: 'Poor',
+      aqiVeryPoor: 'Very Poor',
+      aqiExtremelyPoor: 'Extremely Poor',
+      aqiExplanation: 'European Air Quality Index (EAQI) based on PM2.5, PM10, O3, and NO2 concentrations. Lower values indicate better air quality.',
+      aqiOzone: 'Ozone',
+      aqiNO2: 'NO2',
+
+      // Weather Alerts
+      weatherAlerts: 'Weather Alerts',
+      noActiveAlerts: 'No active alerts',
+      noActiveAlertsDesc: 'There are no weather warnings for this area',
+      alertValidUntil: 'Valid until',
+      alertsSource: 'Source',
+      more: 'more',
+
+      // Alert Severity
+      'alertSeverity.minor': 'Minor',
+      'alertSeverity.moderate': 'Moderate',
+      'alertSeverity.severe': 'Severe',
+      'alertSeverity.extreme': 'Extreme',
+
+      // Alert Types
+      'alertType.wind': 'Strong Wind',
+      'alertType.snow-ice': 'Snow/Ice',
+      'alertType.thunderstorm': 'Thunderstorm',
+      'alertType.fog': 'Dense Fog',
+      'alertType.high-temperature': 'Extreme Heat',
+      'alertType.low-temperature': 'Extreme Cold',
+      'alertType.coastal-event': 'Coastal Hazard',
+      'alertType.forest-fire': 'Fire Risk',
+      'alertType.avalanche': 'Avalanche Risk',
+      'alertType.rain': 'Heavy Rain',
+      'alertType.flood': 'Flood Risk',
+      'alertType.rain-flood': 'Rain/Flood',
+
+      // Recent Searches
+      recentSearches: 'Recent',
+
+      // Keyboard Shortcuts
+      keyboardShortcutModels: 'models',
+      keyboardShortcutTime: 'time',
+
+      // Share
+      share: 'Share',
+      linkCopied: 'Link copied!',
+      shareForecastText: 'Weather forecast for {{location}}',
     },
   },
   el: {
@@ -241,7 +314,10 @@ export const translations = {
 
       // Weather
       forecast: 'Πρόγνωση',
+      sevenDayForecast: 'Πρόγνωση 7 Ημερών',
       forecastFor: 'Πρόγνωση για',
+      humidity: 'Υγρασία',
+      next24h: 'Επόμενες 24ώ',
       loading: 'Φόρτωση...',
       updating: 'Ενημέρωση...',
       loadingChart: 'Φόρτωση χάρτη...',
@@ -399,6 +475,7 @@ export const translations = {
 
       // Simple Mode
       today: 'Σήμερα',
+      now: 'Τώρα',
       feelsLike: 'Αίσθηση',
       kmh: 'χλμ/ω',
       conditionSunny: 'Ηλιόλουστο',
@@ -406,6 +483,23 @@ export const translations = {
       conditionCloudy: 'Νεφελώδες',
       conditionRainy: 'Βροχερό',
       conditionStormy: 'Καταιγίδα',
+      conditionSnowy: 'Χιονόπτωση',
+
+      // UV Index
+      uvIndex: 'Δείκτης UV',
+      uvLow: 'Χαμηλός',
+      uvModerate: 'Μέτριος',
+      uvHigh: 'Υψηλός',
+      uvVeryHigh: 'Πολύ Υψηλός',
+      uvExtreme: 'Ακραίος',
+
+      // Precipitation
+      precipChance: 'Πιθανότητα βροχής',
+      precipProbability: 'Βροχόπτωση',
+
+      // Sun Times
+      sunrise: 'Ανατολή',
+      sunset: 'Δύση',
 
       // Pro Mode
       proModeLabel: 'Pro Mode',
@@ -441,6 +535,58 @@ export const translations = {
       metaObservatoryTitle: 'Πρόγνωση Καιρού {{location}} | nimbi.gr',
       metaObservatoryDescription: '7ήμερη πρόγνωση καιρού για {{location}} συγκρίνοντας μοντέλα ECMWF, GFS, GEM & UKMO',
       meta404Title: 'Η Σελίδα Δεν Βρέθηκε | nimbi.gr',
+
+      // Air Quality
+      airQuality: 'Ποιότητα Αέρα',
+      aqiGood: 'Καλή',
+      aqiFair: 'Μέτρια',
+      aqiModerate: 'Μέτρια προς Κακή',
+      aqiPoor: 'Κακή',
+      aqiVeryPoor: 'Πολύ Κακή',
+      aqiExtremelyPoor: 'Εξαιρετικά Κακή',
+      aqiExplanation: 'Ευρωπαϊκός Δείκτης Ποιότητας Αέρα (EAQI) βασισμένος σε συγκεντρώσεις PM2.5, PM10, O3 και NO2. Χαμηλότερες τιμές υποδεικνύουν καλύτερη ποιότητα αέρα.',
+      aqiOzone: 'Όζον',
+      aqiNO2: 'NO2',
+
+      // Weather Alerts
+      weatherAlerts: 'Ειδοποιήσεις Καιρού',
+      noActiveAlerts: 'Χωρίς ενεργές ειδοποιήσεις',
+      noActiveAlertsDesc: 'Δεν υπάρχουν προειδοποιήσεις καιρού για αυτήν την περιοχή',
+      alertValidUntil: 'Ισχύει έως',
+      alertsSource: 'Πηγή',
+      more: 'ακόμα',
+
+      // Alert Severity
+      'alertSeverity.minor': 'Ήπια',
+      'alertSeverity.moderate': 'Μέτρια',
+      'alertSeverity.severe': 'Σοβαρή',
+      'alertSeverity.extreme': 'Ακραία',
+
+      // Alert Types
+      'alertType.wind': 'Ισχυροί Άνεμοι',
+      'alertType.snow-ice': 'Χιόνι/Πάγος',
+      'alertType.thunderstorm': 'Καταιγίδα',
+      'alertType.fog': 'Πυκνή Ομίχλη',
+      'alertType.high-temperature': 'Καύσωνας',
+      'alertType.low-temperature': 'Ψύχος',
+      'alertType.coastal-event': 'Παράκτιος Κίνδυνος',
+      'alertType.forest-fire': 'Κίνδυνος Πυρκαγιάς',
+      'alertType.avalanche': 'Κίνδυνος Χιονοστιβάδας',
+      'alertType.rain': 'Έντονη Βροχόπτωση',
+      'alertType.flood': 'Κίνδυνος Πλημμύρας',
+      'alertType.rain-flood': 'Βροχή/Πλημμύρα',
+
+      // Recent Searches
+      recentSearches: 'Πρόσφατα',
+
+      // Keyboard Shortcuts
+      keyboardShortcutModels: 'μοντέλα',
+      keyboardShortcutTime: 'χρόνος',
+
+      // Share
+      share: 'Κοινοποίηση',
+      linkCopied: 'Ο σύνδεσμος αντιγράφηκε!',
+      shareForecastText: 'Πρόγνωση καιρού για {{location}}',
     },
   },
 }

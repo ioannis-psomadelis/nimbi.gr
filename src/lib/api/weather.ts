@@ -9,7 +9,13 @@ const HOURLY_PARAMS = [
   'wind_speed_10m',
   'cloud_cover',
   'pressure_msl',
+  'precipitation_probability',
+  'apparent_temperature',
+  'uv_index',
+  'weather_code',
 ].join(',')
+
+const DAILY_PARAMS = ['sunrise', 'sunset'].join(',')
 
 // Model-specific API endpoints (UKMO uses generic forecast endpoint with models param)
 const MODEL_API_CONFIG: Record<ModelId, { endpoint: string; modelParam?: string }> = {
@@ -25,6 +31,7 @@ export function buildModelUrl(model: ModelId, lat: number, lon: number): string 
     latitude: lat.toString(),
     longitude: lon.toString(),
     hourly: HOURLY_PARAMS,
+    daily: DAILY_PARAMS,
     timezone: 'auto',
   })
   // UKMO requires the models parameter

@@ -21,9 +21,10 @@ import {
 } from '@/components/ui/sheet'
 import { createLocationFromCoords } from '@/lib/server/locations'
 import { useDebounce } from '@/lib/utils/debounce'
-import { saveProMode } from '@/lib/storage'
+import { saveProMode, getRecentSearches, addRecentSearch, type RecentSearch } from '@/lib/storage'
 import { getQueryClient } from '@/lib/query-client'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { Clock } from 'lucide-react'
 
 interface SearchResult {
   name: string
@@ -35,11 +36,12 @@ interface SearchResult {
 
 interface HeaderProps {
   proMode?: boolean
+  leftSlot?: React.ReactNode
 }
 
 const MIN_SEARCH_CHARS = 3
 
-export function Header({ proMode = false }: HeaderProps) {
+export function Header({ proMode = false, leftSlot }: HeaderProps) {
   const { t, i18n } = useTranslation()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -47,7 +49,7 @@ export function Header({ proMode = false }: HeaderProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([])
   const navigate = useNavigate()
   const modalInputRef = useRef<HTMLInputElement>(null)
   const isMobile = useIsMobile()
@@ -62,14 +64,6 @@ export function Header({ proMode = false }: HeaderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMobile])
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   // Keyboard shortcut: Ctrl+K / Cmd+K to open search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -82,10 +76,12 @@ export function Header({ proMode = false }: HeaderProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Focus input when modal opens
+  // Focus input when modal opens and load recent searches
   useEffect(() => {
     if (isSearchOpen) {
       setTimeout(() => modalInputRef.current?.focus(), 50)
+      // Load recent searches when modal opens
+      setRecentSearches(getRecentSearches())
     } else {
       // Clear search when closing
       setQuery('')
@@ -132,9 +128,37 @@ export function Header({ proMode = false }: HeaderProps) {
   const selectResult = useCallback(async (result: SearchResult) => {
     setIsNavigating(true)
     try {
+      // Save to recent searches
+      addRecentSearch({
+        name: result.name,
+        lat: result.lat,
+        lon: result.lon,
+        country: result.country,
+        admin1: result.admin1,
+      })
       const { slug } = await createLocationFromCoords({ data: { lat: result.lat, lon: result.lon } })
       await navigate({ to: '/observatory/$slug', params: { slug } })
       // Close modal after successful navigation
+      setIsSearchOpen(false)
+    } catch (error) {
+      console.error('Navigation failed:', error)
+      setIsNavigating(false)
+    }
+  }, [navigate])
+
+  const selectRecentSearch = useCallback(async (search: RecentSearch) => {
+    setIsNavigating(true)
+    try {
+      // Update timestamp for this search
+      addRecentSearch({
+        name: search.name,
+        lat: search.lat,
+        lon: search.lon,
+        country: search.country,
+        admin1: search.admin1,
+      })
+      const { slug } = await createLocationFromCoords({ data: { lat: search.lat, lon: search.lon } })
+      await navigate({ to: '/observatory/$slug', params: { slug } })
       setIsSearchOpen(false)
     } catch (error) {
       console.error('Navigation failed:', error)
@@ -179,16 +203,16 @@ export function Header({ proMode = false }: HeaderProps) {
   return (
     <>
       <header
-        className={`
+        className="
           fixed top-0 left-0 right-0 z-50
           bg-card/95 backdrop-blur-md border-b border-border/50
-          transition-all duration-300 ease-out
-          ${isScrolled ? 'shadow-sm' : ''}
-        `}
+        "
       >
         <div className="w-full flex items-center h-14 px-3 sm:px-4 lg:px-6">
-          {/* Left: Logo */}
-          <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+          {/* Left: Optional slot + Logo */}
+          <div className="flex items-center gap-2 shrink-0">
+            {leftSlot}
+            <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-white/90 dark:bg-primary/15 flex items-center justify-center border border-white/50 dark:border-primary/20 group-hover:bg-white dark:group-hover:bg-primary/25 transition-colors shadow-md dark:shadow-none">
               <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CLOUD_PATH} />
@@ -198,15 +222,16 @@ export function Header({ proMode = false }: HeaderProps) {
               <h1 className="text-sm font-semibold text-foreground leading-tight group-hover:text-primary transition-colors">nimbi</h1>
               <p className="text-[10px] text-muted-foreground leading-tight">{t('weatherObservatory')}</p>
             </div>
-          </Link>
+            </Link>
+          </div>
 
           {/* Center: Search (flex-1 to take remaining space, centered content) */}
-          <div className="flex-1 flex justify-center px-3 sm:px-6 lg:px-12">
+          <div className="flex-1 min-w-0 flex justify-center px-2 sm:px-6 lg:px-12">
             <button
               onClick={() => setIsSearchOpen(true)}
               className="
-                flex items-center gap-2.5 h-10 px-4
-                w-full max-w-md lg:max-w-xl
+                flex items-center gap-2 h-9 px-3 sm:px-4
+                w-full max-w-xl
                 rounded-xl
                 bg-muted/50 hover:bg-muted/80
                 border border-border/40 hover:border-border/70
@@ -375,18 +400,53 @@ export function Header({ proMode = false }: HeaderProps) {
                 </div>
               )}
 
-              {/* Empty state */}
+              {/* Empty state with recent searches */}
               {!query.trim() && (
-                <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                    <MapPin className="w-6 h-6 text-primary/50" />
-                  </div>
-                  <p className="text-sm font-medium text-foreground/70 mb-1">
-                    {t('findYourLocation', 'Find your location')}
-                  </p>
-                  <p className="text-xs text-muted-foreground/60">
-                    {t('searchCitiesHint', 'Search for cities, towns, or places')}
-                  </p>
+                <div className="p-3">
+                  {recentSearches.length > 0 ? (
+                    <>
+                      <p className="px-3 py-1.5 text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
+                        {t('recentSearches', 'Recent')}
+                      </p>
+                      <div className="space-y-1">
+                        {recentSearches.map((search) => (
+                          <button
+                            key={`${search.lat}-${search.lon}`}
+                            onClick={() => selectRecentSearch(search)}
+                            disabled={isNavigating}
+                            className="
+                              w-full flex items-center gap-3 px-3 py-3 rounded-xl
+                              text-left transition-all duration-150
+                              disabled:opacity-50 disabled:cursor-not-allowed
+                              hover:bg-muted/40 active:bg-muted/60
+                            "
+                          >
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-muted/40 text-muted-foreground">
+                              <Clock className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm text-foreground truncate">{search.name}</p>
+                              <p className="text-xs text-muted-foreground/70 truncate mt-0.5">
+                                {search.admin1 && `${search.admin1}, `}{search.country}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                        <MapPin className="w-6 h-6 text-primary/50" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground/70 mb-1">
+                        {t('findYourLocation', 'Find your location')}
+                      </p>
+                      <p className="text-xs text-muted-foreground/60">
+                        {t('searchCitiesHint', 'Search for cities, towns, or places')}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -415,7 +475,7 @@ export function Header({ proMode = false }: HeaderProps) {
                 disabled={isNavigating}
                 className="
                   w-full h-14 pl-12 pr-4
-                  bg-transparent border-0
+                  bg-transparent border-0 rounded-none
                   text-base text-foreground placeholder:text-muted-foreground/60
                   focus-visible:ring-0 focus-visible:ring-offset-0
                   disabled:opacity-50
@@ -512,13 +572,46 @@ export function Header({ proMode = false }: HeaderProps) {
                 </div>
               )}
 
-              {/* Empty state */}
+              {/* Empty state with recent searches */}
               {!query.trim() && (
-                <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                    <Search className="w-5 h-5 text-primary/60" />
-                  </div>
-                  <p className="text-sm text-muted-foreground">{t('searchPlaceholder')}</p>
+                <div className="p-2">
+                  {recentSearches.length > 0 ? (
+                    <>
+                      <p className="px-4 py-2 text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">
+                        {t('recentSearches', 'Recent')}
+                      </p>
+                      {recentSearches.map((search) => (
+                        <button
+                          key={`${search.lat}-${search.lon}`}
+                          onClick={() => selectRecentSearch(search)}
+                          disabled={isNavigating}
+                          className="
+                            w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                            text-left transition-all duration-150
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                            hover:bg-muted/50 text-foreground/90
+                          "
+                        >
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-muted/50 text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{search.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {search.admin1 && `${search.admin1}, `}{search.country}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                        <Search className="w-5 h-5 text-primary/60" />
+                      </div>
+                      <p className="text-sm text-muted-foreground">{t('searchPlaceholder')}</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
