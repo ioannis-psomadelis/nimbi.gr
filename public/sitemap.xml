@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="sitemap.xsl"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
-  <!-- Home Page - Greek (default) -->
   <url>
     <loc>https://nimbi.gr/</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/"/>
@@ -10,8 +10,6 @@
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Home Page - English -->
   <url>
     <loc>https://nimbi.gr/en/</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/"/>
@@ -20,8 +18,6 @@
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Athens - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/athens-gr</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/athens-gr"/>
@@ -29,8 +25,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- Athens - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/athens-gr</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/athens-gr"/>
@@ -38,8 +32,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- Thessaloniki - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/thessaloniki-gr</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/thessaloniki-gr"/>
@@ -47,8 +39,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- Thessaloniki - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/thessaloniki-gr</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/thessaloniki-gr"/>
@@ -56,8 +46,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- London - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/london-gb</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/london-gb"/>
@@ -65,8 +53,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- London - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/london-gb</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/london-gb"/>
@@ -74,8 +60,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Paris - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/paris-fr</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/paris-fr"/>
@@ -83,8 +67,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Paris - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/paris-fr</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/paris-fr"/>
@@ -92,8 +74,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Berlin - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/berlin-de</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/berlin-de"/>
@@ -101,8 +81,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Berlin - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/berlin-de</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/berlin-de"/>
@@ -110,8 +88,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Rome - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/rome-it</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/rome-it"/>
@@ -119,8 +95,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Rome - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/rome-it</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/rome-it"/>
@@ -128,8 +102,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Madrid - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/madrid-es</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/madrid-es"/>
@@ -137,8 +109,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Madrid - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/madrid-es</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/madrid-es"/>
@@ -146,8 +116,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Amsterdam - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/amsterdam-nl</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/amsterdam-nl"/>
@@ -155,8 +123,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Amsterdam - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/amsterdam-nl</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/amsterdam-nl"/>
@@ -164,8 +130,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Vienna - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/vienna-at</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/vienna-at"/>
@@ -173,8 +137,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Vienna - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/vienna-at</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/vienna-at"/>
@@ -182,8 +144,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Stockholm - Greek -->
   <url>
     <loc>https://nimbi.gr/observatory/stockholm-se</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/stockholm-se"/>
@@ -191,8 +151,6 @@
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
-
-  <!-- Stockholm - English -->
   <url>
     <loc>https://nimbi.gr/en/observatory/stockholm-se</loc>
     <xhtml:link rel="alternate" hreflang="el" href="https://nimbi.gr/observatory/stockholm-se"/>
