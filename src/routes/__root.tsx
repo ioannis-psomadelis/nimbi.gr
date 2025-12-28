@@ -16,26 +16,39 @@ import appCss from '../styles.css?url'
 // Script to prevent flash of wrong theme - reads from nimbi-store cookie
 const themeScript = `
   (function() {
+    var themeColors = { light: '#ffffff', dark: '#0a0a0a' };
+    function applyTheme(theme) {
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(theme);
+      document.documentElement.style.colorScheme = theme;
+      // Update theme-color meta tag for status bar
+      var metas = document.querySelectorAll('meta[name="theme-color"]');
+      metas.forEach(function(meta) { meta.remove(); });
+      var meta = document.createElement('meta');
+      meta.name = 'theme-color';
+      meta.content = themeColors[theme];
+      document.head.appendChild(meta);
+    }
+    function getSystemTheme() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
     try {
       var cookie = document.cookie.split('; ').find(function(row) { return row.startsWith('nimbi-store='); });
       if (cookie) {
         var data = JSON.parse(decodeURIComponent(cookie.split('=')[1]));
         var stored = data.preferences && data.preferences.state && data.preferences.state.theme;
         if (stored === 'light' || stored === 'dark') {
-          document.documentElement.classList.add(stored);
-          document.documentElement.style.colorScheme = stored;
+          applyTheme(stored);
           return;
         }
         if (stored === 'system') {
-          var resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-          document.documentElement.classList.add(resolved);
-          document.documentElement.style.colorScheme = resolved;
+          applyTheme(getSystemTheme());
           return;
         }
       }
     } catch (e) {}
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.colorScheme = 'dark';
+    // Fallback to system preference, not hardcoded dark
+    applyTheme(getSystemTheme());
   })();
 `
 
@@ -150,11 +163,40 @@ export const Route = createRootRoute({
       },
       {
         name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
+        content: 'width=device-width, initial-scale=1, viewport-fit=cover',
+      },
+      // Theme colors for light/dark mode (Android status bar)
+      {
+        name: 'theme-color',
+        media: '(prefers-color-scheme: light)',
+        content: '#ffffff',
       },
       {
         name: 'theme-color',
-        content: '#3b82f6',
+        media: '(prefers-color-scheme: dark)',
+        content: '#0a0a0a',
+      },
+      // iOS status bar
+      {
+        name: 'apple-mobile-web-app-capable',
+        content: 'yes',
+      },
+      {
+        name: 'apple-mobile-web-app-status-bar-style',
+        content: 'black-translucent',
+      },
+      {
+        name: 'apple-mobile-web-app-title',
+        content: 'nimbi',
+      },
+      // Mobile app behavior
+      {
+        name: 'mobile-web-app-capable',
+        content: 'yes',
+      },
+      {
+        name: 'format-detection',
+        content: 'telephone=no',
       },
       // Base OG tags (can be overridden by child routes)
       {

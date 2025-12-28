@@ -32,9 +32,9 @@ interface PreferencesState {
 export const usePreferencesStore = create<PreferencesState>()(
   persist(
     (set, get) => ({
-      // Defaults
-      theme: 'dark',
-      resolvedTheme: 'dark',
+      // Defaults - use system theme preference
+      theme: 'system',
+      resolvedTheme: typeof window !== 'undefined' ? getSystemTheme() : 'dark',
       language: 'en',
       proMode: false,
 

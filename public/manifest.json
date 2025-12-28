@@ -48,28 +48,54 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "id": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "portrait-primary",
-  "theme_color": "#3b82f6",
+  "theme_color": "#0a0a0a",
   "background_color": "#0a0a0a",
   "categories": ["weather", "utilities"],
   "lang": "en",
   "dir": "ltr",
   "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
   "shortcuts": [
     {
-      "name": "Search Location",
-      "short_name": "Search",
-      "description": "Search for a location to view weather",
-      "url": "/",
+      "name": "Athens Weather",
+      "short_name": "Athens",
+      "description": "View weather for Athens",
+      "url": "/observatory/athens-gr?source=pwa",
       "icons": [
         {
           "src": "favicon-32x32.png",
           "sizes": "32x32"
         }
       ]
+    },
+    {
+      "name": "Search Location",
+      "short_name": "Search",
+      "description": "Search for a location to view weather",
+      "url": "/?source=pwa",
+      "icons": [
+        {
+          "src": "favicon-32x32.png",
+          "sizes": "32x32"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "nimbi.gr Weather Observatory"
     }
   ]
 }
