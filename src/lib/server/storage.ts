@@ -68,15 +68,3 @@ export const getServerSelectedModel = createServerFn({ method: 'GET' }).handler(
   }
 )
 
-// Server-side function to read pro mode from cookie
-export const getServerProMode = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<boolean> => {
-    try {
-      const data = getStoreData()
-      const state = getStateFromStore<{ proMode?: boolean }>(data, 'preferences')
-      return state?.proMode === true
-    } catch {
-      return false
-    }
-  }
-)

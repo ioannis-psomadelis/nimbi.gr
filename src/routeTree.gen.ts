@@ -9,10 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProRouteImport } from './routes/pro'
+import { Route as EnRouteImport } from './routes/en'
+import { Route as ElRouteImport } from './routes/el'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProIndexRouteImport } from './routes/pro/index'
+import { Route as EnIndexRouteImport } from './routes/en/index'
+import { Route as ElIndexRouteImport } from './routes/el/index'
 import { Route as ObservatorySlugRouteImport } from './routes/observatory.$slug'
+import { Route as EnProRouteImport } from './routes/en/pro'
+import { Route as ElSplatRouteImport } from './routes/el/$'
+import { Route as ApiChartImageRouteImport } from './routes/api/chart-image'
+import { Route as EnProIndexRouteImport } from './routes/en/pro/index'
+import { Route as ProObservatorySlugRouteImport } from './routes/pro/observatory.$slug'
+import { Route as EnObservatorySlugRouteImport } from './routes/en/observatory.$slug'
+import { Route as EnProObservatorySlugRouteImport } from './routes/en/pro/observatory.$slug'
 
+const ProRoute = ProRouteImport.update({
+  id: '/pro',
+  path: '/pro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnRoute = EnRouteImport.update({
+  id: '/en',
+  path: '/en',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ElRoute = ElRouteImport.update({
+  id: '/el',
+  path: '/el',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
@@ -23,44 +51,199 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProIndexRoute = ProIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProRoute,
+} as any)
+const EnIndexRoute = EnIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EnRoute,
+} as any)
+const ElIndexRoute = ElIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ElRoute,
+} as any)
 const ObservatorySlugRoute = ObservatorySlugRouteImport.update({
   id: '/observatory/$slug',
   path: '/observatory/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EnProRoute = EnProRouteImport.update({
+  id: '/pro',
+  path: '/pro',
+  getParentRoute: () => EnRoute,
+} as any)
+const ElSplatRoute = ElSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => ElRoute,
+} as any)
+const ApiChartImageRoute = ApiChartImageRouteImport.update({
+  id: '/api/chart-image',
+  path: '/api/chart-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnProIndexRoute = EnProIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => EnProRoute,
+} as any)
+const ProObservatorySlugRoute = ProObservatorySlugRouteImport.update({
+  id: '/observatory/$slug',
+  path: '/observatory/$slug',
+  getParentRoute: () => ProRoute,
+} as any)
+const EnObservatorySlugRoute = EnObservatorySlugRouteImport.update({
+  id: '/observatory/$slug',
+  path: '/observatory/$slug',
+  getParentRoute: () => EnRoute,
+} as any)
+const EnProObservatorySlugRoute = EnProObservatorySlugRouteImport.update({
+  id: '/observatory/$slug',
+  path: '/observatory/$slug',
+  getParentRoute: () => EnProRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/el': typeof ElRouteWithChildren
+  '/en': typeof EnRouteWithChildren
+  '/pro': typeof ProRouteWithChildren
+  '/api/chart-image': typeof ApiChartImageRoute
+  '/el/$': typeof ElSplatRoute
+  '/en/pro': typeof EnProRouteWithChildren
   '/observatory/$slug': typeof ObservatorySlugRoute
+  '/el/': typeof ElIndexRoute
+  '/en/': typeof EnIndexRoute
+  '/pro/': typeof ProIndexRoute
+  '/en/observatory/$slug': typeof EnObservatorySlugRoute
+  '/pro/observatory/$slug': typeof ProObservatorySlugRoute
+  '/en/pro/': typeof EnProIndexRoute
+  '/en/pro/observatory/$slug': typeof EnProObservatorySlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/api/chart-image': typeof ApiChartImageRoute
+  '/el/$': typeof ElSplatRoute
   '/observatory/$slug': typeof ObservatorySlugRoute
+  '/el': typeof ElIndexRoute
+  '/en': typeof EnIndexRoute
+  '/pro': typeof ProIndexRoute
+  '/en/observatory/$slug': typeof EnObservatorySlugRoute
+  '/pro/observatory/$slug': typeof ProObservatorySlugRoute
+  '/en/pro': typeof EnProIndexRoute
+  '/en/pro/observatory/$slug': typeof EnProObservatorySlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/el': typeof ElRouteWithChildren
+  '/en': typeof EnRouteWithChildren
+  '/pro': typeof ProRouteWithChildren
+  '/api/chart-image': typeof ApiChartImageRoute
+  '/el/$': typeof ElSplatRoute
+  '/en/pro': typeof EnProRouteWithChildren
   '/observatory/$slug': typeof ObservatorySlugRoute
+  '/el/': typeof ElIndexRoute
+  '/en/': typeof EnIndexRoute
+  '/pro/': typeof ProIndexRoute
+  '/en/observatory/$slug': typeof EnObservatorySlugRoute
+  '/pro/observatory/$slug': typeof ProObservatorySlugRoute
+  '/en/pro/': typeof EnProIndexRoute
+  '/en/pro/observatory/$slug': typeof EnProObservatorySlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/$' | '/observatory/$slug'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/el'
+    | '/en'
+    | '/pro'
+    | '/api/chart-image'
+    | '/el/$'
+    | '/en/pro'
+    | '/observatory/$slug'
+    | '/el/'
+    | '/en/'
+    | '/pro/'
+    | '/en/observatory/$slug'
+    | '/pro/observatory/$slug'
+    | '/en/pro/'
+    | '/en/pro/observatory/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$' | '/observatory/$slug'
-  id: '__root__' | '/' | '/$' | '/observatory/$slug'
+  to:
+    | '/'
+    | '/$'
+    | '/api/chart-image'
+    | '/el/$'
+    | '/observatory/$slug'
+    | '/el'
+    | '/en'
+    | '/pro'
+    | '/en/observatory/$slug'
+    | '/pro/observatory/$slug'
+    | '/en/pro'
+    | '/en/pro/observatory/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/el'
+    | '/en'
+    | '/pro'
+    | '/api/chart-image'
+    | '/el/$'
+    | '/en/pro'
+    | '/observatory/$slug'
+    | '/el/'
+    | '/en/'
+    | '/pro/'
+    | '/en/observatory/$slug'
+    | '/pro/observatory/$slug'
+    | '/en/pro/'
+    | '/en/pro/observatory/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  ElRoute: typeof ElRouteWithChildren
+  EnRoute: typeof EnRouteWithChildren
+  ProRoute: typeof ProRouteWithChildren
+  ApiChartImageRoute: typeof ApiChartImageRoute
   ObservatorySlugRoute: typeof ObservatorySlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pro': {
+      id: '/pro'
+      path: '/pro'
+      fullPath: '/pro'
+      preLoaderRoute: typeof ProRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/en': {
+      id: '/en'
+      path: '/en'
+      fullPath: '/en'
+      preLoaderRoute: typeof EnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/el': {
+      id: '/el'
+      path: '/el'
+      fullPath: '/el'
+      preLoaderRoute: typeof ElRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$': {
       id: '/$'
       path: '/$'
@@ -75,6 +258,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pro/': {
+      id: '/pro/'
+      path: '/'
+      fullPath: '/pro/'
+      preLoaderRoute: typeof ProIndexRouteImport
+      parentRoute: typeof ProRoute
+    }
+    '/en/': {
+      id: '/en/'
+      path: '/'
+      fullPath: '/en/'
+      preLoaderRoute: typeof EnIndexRouteImport
+      parentRoute: typeof EnRoute
+    }
+    '/el/': {
+      id: '/el/'
+      path: '/'
+      fullPath: '/el/'
+      preLoaderRoute: typeof ElIndexRouteImport
+      parentRoute: typeof ElRoute
+    }
     '/observatory/$slug': {
       id: '/observatory/$slug'
       path: '/observatory/$slug'
@@ -82,12 +286,115 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ObservatorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/en/pro': {
+      id: '/en/pro'
+      path: '/pro'
+      fullPath: '/en/pro'
+      preLoaderRoute: typeof EnProRouteImport
+      parentRoute: typeof EnRoute
+    }
+    '/el/$': {
+      id: '/el/$'
+      path: '/$'
+      fullPath: '/el/$'
+      preLoaderRoute: typeof ElSplatRouteImport
+      parentRoute: typeof ElRoute
+    }
+    '/api/chart-image': {
+      id: '/api/chart-image'
+      path: '/api/chart-image'
+      fullPath: '/api/chart-image'
+      preLoaderRoute: typeof ApiChartImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/en/pro/': {
+      id: '/en/pro/'
+      path: '/'
+      fullPath: '/en/pro/'
+      preLoaderRoute: typeof EnProIndexRouteImport
+      parentRoute: typeof EnProRoute
+    }
+    '/pro/observatory/$slug': {
+      id: '/pro/observatory/$slug'
+      path: '/observatory/$slug'
+      fullPath: '/pro/observatory/$slug'
+      preLoaderRoute: typeof ProObservatorySlugRouteImport
+      parentRoute: typeof ProRoute
+    }
+    '/en/observatory/$slug': {
+      id: '/en/observatory/$slug'
+      path: '/observatory/$slug'
+      fullPath: '/en/observatory/$slug'
+      preLoaderRoute: typeof EnObservatorySlugRouteImport
+      parentRoute: typeof EnRoute
+    }
+    '/en/pro/observatory/$slug': {
+      id: '/en/pro/observatory/$slug'
+      path: '/observatory/$slug'
+      fullPath: '/en/pro/observatory/$slug'
+      preLoaderRoute: typeof EnProObservatorySlugRouteImport
+      parentRoute: typeof EnProRoute
+    }
   }
 }
+
+interface ElRouteChildren {
+  ElSplatRoute: typeof ElSplatRoute
+  ElIndexRoute: typeof ElIndexRoute
+}
+
+const ElRouteChildren: ElRouteChildren = {
+  ElSplatRoute: ElSplatRoute,
+  ElIndexRoute: ElIndexRoute,
+}
+
+const ElRouteWithChildren = ElRoute._addFileChildren(ElRouteChildren)
+
+interface EnProRouteChildren {
+  EnProIndexRoute: typeof EnProIndexRoute
+  EnProObservatorySlugRoute: typeof EnProObservatorySlugRoute
+}
+
+const EnProRouteChildren: EnProRouteChildren = {
+  EnProIndexRoute: EnProIndexRoute,
+  EnProObservatorySlugRoute: EnProObservatorySlugRoute,
+}
+
+const EnProRouteWithChildren = EnProRoute._addFileChildren(EnProRouteChildren)
+
+interface EnRouteChildren {
+  EnProRoute: typeof EnProRouteWithChildren
+  EnIndexRoute: typeof EnIndexRoute
+  EnObservatorySlugRoute: typeof EnObservatorySlugRoute
+}
+
+const EnRouteChildren: EnRouteChildren = {
+  EnProRoute: EnProRouteWithChildren,
+  EnIndexRoute: EnIndexRoute,
+  EnObservatorySlugRoute: EnObservatorySlugRoute,
+}
+
+const EnRouteWithChildren = EnRoute._addFileChildren(EnRouteChildren)
+
+interface ProRouteChildren {
+  ProIndexRoute: typeof ProIndexRoute
+  ProObservatorySlugRoute: typeof ProObservatorySlugRoute
+}
+
+const ProRouteChildren: ProRouteChildren = {
+  ProIndexRoute: ProIndexRoute,
+  ProObservatorySlugRoute: ProObservatorySlugRoute,
+}
+
+const ProRouteWithChildren = ProRoute._addFileChildren(ProRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  ElRoute: ElRouteWithChildren,
+  EnRoute: EnRouteWithChildren,
+  ProRoute: ProRouteWithChildren,
+  ApiChartImageRoute: ApiChartImageRoute,
   ObservatorySlugRoute: ObservatorySlugRoute,
 }
 export const routeTree = rootRouteImport

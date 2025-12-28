@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  AreaChart,
+  ComposedChart,
   Area,
+  Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -21,6 +23,8 @@ interface WeekChartProps {
 const COLORS = {
   high: '#f97316', // orange-500
   low: '#3b82f6',  // blue-500
+  precip: '#06b6d4', // cyan-500
+  wind: '#a855f7', // purple-500
   grid: '#374151', // gray-700
   text: '#9ca3af', // gray-400
 }
@@ -29,6 +33,56 @@ const COLORS = {
 const LOCALE_MAP: Record<string, string> = {
   en: 'en-US',
   el: 'el-GR',
+}
+
+// Custom tooltip - defined outside component to prevent recreation
+function ChartTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+
+  const data = payload[0].payload
+  return (
+    <div className="bg-popover text-popover-foreground rounded-xl p-3 shadow-lg min-w-[140px] border border-border">
+      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
+        <span className="text-xl">{data.icon}</span>
+        <span className="font-semibold text-sm">{label}</span>
+      </div>
+      {/* Temperature */}
+      <div className="text-xs mb-1.5 flex justify-between">
+        <span className="text-muted-foreground">Temp</span>
+        <span>
+          <span className="font-semibold" style={{ color: COLORS.high }}>{data.high}°</span>
+          <span className="text-muted-foreground"> / </span>
+          <span className="font-semibold" style={{ color: COLORS.low }}>{data.low}°</span>
+        </span>
+      </div>
+      {/* Feels like */}
+      {data.feelsHigh !== data.high && (
+        <div className="text-[11px] mb-1.5 flex justify-between text-muted-foreground">
+          <span>Feels</span>
+          <span>{data.feelsHigh}° / {data.feelsLow}°</span>
+        </div>
+      )}
+      {/* Precipitation */}
+      {data.precip > 0 && (
+        <div className="text-xs mb-1 flex justify-between items-center">
+          <span style={{ color: COLORS.precip }}>💧 Rain</span>
+          <span className="font-medium" style={{ color: COLORS.precip }}>{data.precip.toFixed(1)} mm</span>
+        </div>
+      )}
+      {/* Wind */}
+      <div className="text-xs mb-1 flex justify-between items-center">
+        <span style={{ color: COLORS.wind }}>💨 Wind</span>
+        <span className="font-medium" style={{ color: COLORS.wind }}>{data.wind} km/h</span>
+      </div>
+      {/* UV Index */}
+      {data.uv > 0 && (
+        <div className="text-xs flex justify-between items-center">
+          <span className="text-amber-400">☀️ UV</span>
+          <span className="font-medium text-amber-400">{data.uv}</span>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function WeekChart({ days }: WeekChartProps) {
@@ -46,6 +100,12 @@ export function WeekChart({ days }: WeekChartProps) {
       name: day.date.toLocaleDateString(locale, { weekday: 'short' }),
       high: day.tempHigh,
       low: day.tempLow,
+      precip: day.precipTotal,
+      wind: day.windMax,
+      windAvg: day.windAvg,
+      feelsHigh: day.feelsLikeHigh,
+      feelsLow: day.feelsLikeLow,
+      uv: day.uvMax,
       icon: day.icon,
     }))
   }, [days, locale])
@@ -53,83 +113,73 @@ export function WeekChart({ days }: WeekChartProps) {
   const minTemp = Math.min(...days.map((d) => d.tempLow)) - 2
   const maxTemp = Math.max(...days.map((d) => d.tempHigh)) + 2
 
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload
-      return (
-        <div
-          style={{
-            backgroundColor: '#f5f5f5',
-            color: '#1a1a1a',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '18px' }}>{data.icon}</span>
-            <span style={{ fontWeight: 500 }}>{label}</span>
-          </div>
-          <div style={{ fontSize: '14px' }}>
-            <span style={{ fontWeight: 500, color: COLORS.high }}>{data.high}&deg;</span>
-            <span style={{ color: '#666' }}> / </span>
-            <span style={{ fontWeight: 500, color: COLORS.low }}>{data.low}&deg;</span>
-          </div>
-        </div>
-      )
-    }
-    return null
-  }
+  const maxPrecip = Math.max(...days.map((d) => d.precipTotal), 1)
 
-  // Custom X-axis tick with icon
-  const CustomXAxisTick = ({ x, y, payload }: any) => {
-    const day = chartData.find((d) => d.name === payload.value)
-    return (
-      <g transform={`translate(${x},${y})`}>
-        <text
-          x={0}
-          y={0}
-          dy={16}
-          textAnchor="middle"
-          fill={COLORS.text}
-          style={{ fontSize: '11px' }}
-        >
-          {payload.value}
-        </text>
-        {day && (
-          <text x={0} y={0} dy={34} textAnchor="middle" style={{ fontSize: '14px' }}>
-            {day.icon}
+  // Create lookup map for efficient icon access in tick component
+  const chartDataMap = useMemo(
+    () => new Map(chartData.map((d) => [d.name, d])),
+    [chartData]
+  )
+
+  // Memoized X-axis tick with icon
+  const CustomXAxisTick = useCallback(
+    ({ x, y, payload }: any) => {
+      const day = chartDataMap.get(payload.value)
+      return (
+        <g transform={`translate(${x},${y})`}>
+          <text
+            x={0}
+            y={0}
+            dy={16}
+            textAnchor="middle"
+            fill={COLORS.text}
+            style={{ fontSize: '11px' }}
+          >
+            {payload.value}
           </text>
-        )}
-      </g>
-    )
-  }
+          {day && (
+            <text x={0} y={0} dy={34} textAnchor="middle" style={{ fontSize: '14px' }}>
+              {day.icon}
+            </text>
+          )}
+        </g>
+      )
+    },
+    [chartDataMap]
+  )
 
   return (
-    <div className="w-full h-[180px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart
+    <div className="w-full">
+      <ResponsiveContainer width="100%" height={200}>
+        <ComposedChart
           data={chartData}
-          margin={{ top: 10, right: 10, left: -20, bottom: 40 }}
+          margin={{ top: 10, right: 20, left: 0, bottom: 35 }}
         >
           <defs>
-            {/* High temp gradient */}
+            {/* High temp gradient - warmer, more vibrant */}
             <linearGradient id="tempHighGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.high} stopOpacity={0.4} />
-              <stop offset="95%" stopColor={COLORS.high} stopOpacity={0.05} />
+              <stop offset="0%" stopColor={COLORS.high} stopOpacity={0.5} />
+              <stop offset="50%" stopColor={COLORS.high} stopOpacity={0.2} />
+              <stop offset="100%" stopColor={COLORS.high} stopOpacity={0.02} />
             </linearGradient>
-            {/* Low temp gradient */}
+            {/* Low temp gradient - cooler */}
             <linearGradient id="tempLowGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLORS.low} stopOpacity={0.3} />
-              <stop offset="95%" stopColor={COLORS.low} stopOpacity={0.05} />
+              <stop offset="0%" stopColor={COLORS.low} stopOpacity={0.4} />
+              <stop offset="50%" stopColor={COLORS.low} stopOpacity={0.15} />
+              <stop offset="100%" stopColor={COLORS.low} stopOpacity={0.02} />
+            </linearGradient>
+            {/* Precip gradient - glass effect */}
+            <linearGradient id="precipGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={COLORS.precip} stopOpacity={0.9} />
+              <stop offset="50%" stopColor={COLORS.precip} stopOpacity={0.6} />
+              <stop offset="100%" stopColor={COLORS.precip} stopOpacity={0.3} />
             </linearGradient>
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
             stroke={COLORS.grid}
-            strokeOpacity={0.5}
+            strokeOpacity={0.3}
           />
           <XAxis
             dataKey="name"
@@ -139,61 +189,106 @@ export function WeekChart({ days }: WeekChartProps) {
             interval={0}
           />
           <YAxis
+            yAxisId="temp"
             domain={[minTemp, maxTemp]}
             axisLine={false}
             tickLine={false}
-            tick={{ fontSize: 11, fill: COLORS.text }}
+            tick={{ fontSize: 9, fill: COLORS.text }}
             tickFormatter={(value) => `${value}°`}
+            width={25}
           />
-          <Tooltip content={<CustomTooltip />} cursor={false} />
+          <YAxis
+            yAxisId="precip"
+            orientation="right"
+            domain={[0, Math.max(maxPrecip * 1.5, 10)]}
+            axisLine={false}
+            tickLine={false}
+            tick={{ fontSize: 8, fill: COLORS.precip }}
+            tickFormatter={(value) => value > 0 ? `${Math.round(value)}` : ''}
+            width={20}
+          />
+          <Tooltip content={<ChartTooltip />} cursor={false} />
+          {/* Precipitation bars */}
+          <Bar
+            yAxisId="precip"
+            dataKey="precip"
+            fill="url(#precipGradient)"
+            radius={[6, 6, 0, 0]}
+            maxBarSize={24}
+          />
+          {/* Wind line - subtle dashed */}
+          <Line
+            yAxisId="precip"
+            type="monotone"
+            dataKey="wind"
+            stroke={COLORS.wind}
+            strokeWidth={1.5}
+            strokeDasharray="4 3"
+            dot={false}
+            opacity={0.6}
+          />
           {/* Low temps area */}
           <Area
-            type="monotone"
+            yAxisId="temp"
+            type="natural"
             dataKey="low"
             stroke={COLORS.low}
-            strokeWidth={2}
+            strokeWidth={2.5}
             fill="url(#tempLowGradient)"
             dot={{
               fill: COLORS.low,
-              strokeWidth: 0,
-              r: 3,
+              strokeWidth: 2,
+              stroke: '#1a1a1a',
+              r: 4,
             }}
             activeDot={{
               fill: COLORS.low,
-              strokeWidth: 0,
-              r: 5,
+              strokeWidth: 2,
+              stroke: '#fff',
+              r: 6,
             }}
           />
           {/* High temps area */}
           <Area
-            type="monotone"
+            yAxisId="temp"
+            type="natural"
             dataKey="high"
             stroke={COLORS.high}
-            strokeWidth={2}
+            strokeWidth={2.5}
             fill="url(#tempHighGradient)"
             dot={{
               fill: COLORS.high,
-              strokeWidth: 0,
+              strokeWidth: 2,
+              stroke: '#1a1a1a',
               r: 4,
             }}
             activeDot={{
               fill: COLORS.high,
-              strokeWidth: 0,
+              strokeWidth: 2,
+              stroke: '#fff',
               r: 6,
             }}
           />
-        </AreaChart>
+        </ComposedChart>
       </ResponsiveContainer>
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 -mt-2 text-xs" style={{ color: COLORS.text }}>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: COLORS.high }} />
-          <span>{t('tempHigh', 'High')}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-0.5 rounded-full" style={{ backgroundColor: COLORS.low }} />
-          <span>{t('tempLow', 'Low')}</span>
-        </div>
+      <div className="flex items-center justify-center gap-2 mt-1 text-[9px]" style={{ color: COLORS.text }}>
+        <span className="flex items-center gap-0.5">
+          <span className="w-2 h-0.5 rounded-full inline-block" style={{ backgroundColor: COLORS.high }} />
+          {t('tempHigh', 'High')}
+        </span>
+        <span className="flex items-center gap-0.5">
+          <span className="w-2 h-0.5 rounded-full inline-block" style={{ backgroundColor: COLORS.low }} />
+          {t('tempLow', 'Low')}
+        </span>
+        <span className="flex items-center gap-0.5">
+          <span className="w-1.5 h-1.5 rounded-sm inline-block" style={{ backgroundColor: COLORS.precip, opacity: 0.7 }} />
+          mm
+        </span>
+        <span className="flex items-center gap-0.5">
+          <span className="w-2 h-0 border-t border-dashed inline-block" style={{ borderColor: COLORS.wind }} />
+          {t('wind', 'Wind')}
+        </span>
       </div>
     </div>
   )

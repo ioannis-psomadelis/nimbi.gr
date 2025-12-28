@@ -168,6 +168,20 @@ export function generateWeeklyNarrative(
     tempHigh: day.primary.tempHigh,
     tempLow: day.primary.tempLow,
     modelNote: generateModelNote(day, lang),
+    // Enhanced data
+    precipTotal: day.primary.precipTotal,
+    precipProbability: day.primary.precipProbability,
+    windMax: day.primary.windMax,
+    windAvg: day.primary.windAvg,
+    agreement: day.agreement.overall,
+    // Additional metrics
+    feelsLikeHigh: day.primary.feelsLikeHigh,
+    feelsLikeLow: day.primary.feelsLikeLow,
+    uvMax: day.primary.uvMax,
+    cloudCoverAvg: day.primary.cloudCoverAvg,
+    // Hourly data
+    hourlyTemps: day.primary.hourlyTemps,
+    hourlyPrecip: day.primary.hourlyPrecip,
   }))
 
   return {

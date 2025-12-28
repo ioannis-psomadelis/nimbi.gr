@@ -2,11 +2,11 @@
   "athens-gr": { "name": "Athens", "nameLocal": "Αθήνα", "lat": 37.9838, "lon": 23.7275, "country": "GR" },
   "london-gb": { "name": "London", "lat": 51.5074, "lon": -0.1278, "country": "GB" },
   "paris-fr": { "name": "Paris", "lat": 48.8566, "lon": 2.3522, "country": "FR" },
-  "new-york-us": { "name": "New York", "lat": 40.7128, "lon": -74.0060, "country": "US" },
-  "tokyo-jp": { "name": "Tokyo", "nameLocal": "東京", "lat": 35.6762, "lon": 139.6503, "country": "JP" },
   "berlin-de": { "name": "Berlin", "lat": 52.5200, "lon": 13.4050, "country": "DE" },
   "rome-it": { "name": "Rome", "nameLocal": "Roma", "lat": 41.9028, "lon": 12.4964, "country": "IT" },
   "madrid-es": { "name": "Madrid", "lat": 40.4168, "lon": -3.7038, "country": "ES" },
   "thessaloniki-gr": { "name": "Thessaloniki", "nameLocal": "Θεσσαλονίκη", "lat": 40.6401, "lon": 22.9444, "country": "GR" },
-  "amsterdam-nl": { "name": "Amsterdam", "lat": 52.3676, "lon": 4.9041, "country": "NL" }
+  "amsterdam-nl": { "name": "Amsterdam", "lat": 52.3676, "lon": 4.9041, "country": "NL" },
+  "vienna-at": { "name": "Vienna", "nameLocal": "Wien", "lat": 48.2082, "lon": 16.3738, "country": "AT" },
+  "stockholm-se": { "name": "Stockholm", "lat": 59.3293, "lon": 18.0686, "country": "SE" }
 }

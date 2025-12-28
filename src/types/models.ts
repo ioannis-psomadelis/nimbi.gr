@@ -1,9 +1,33 @@
-export const MODELS = ['ecmwf-hres', 'icon', 'arpege', 'gfs', 'gem', 'ukmo'] as const
+export const MODELS = [
+  'ecmwf-hres',
+  'icon',
+  'arpege',
+  'gfs',
+  'gem',
+  'ukmo',
+  'ec-aifs',
+  'gefs',
+  'eps',
+] as const
 
 export type ModelId = (typeof MODELS)[number]
 
-export type ChartProvider = 'meteociel' | 'wetterzentrale'
+export type ChartProvider = 'meteociel' | 'wetterzentrale' | 'tropicaltidbits'
 export type DataProvider = 'open-meteo'
+
+export const MODEL_GROUPS = {
+  'high-res': ['ecmwf-hres', 'icon', 'arpege', 'gfs', 'gem', 'ukmo', 'ec-aifs'],
+  'ensemble': ['gefs', 'eps'],
+} as const
+
+export type ModelGroupId = keyof typeof MODEL_GROUPS
+
+export function getModelGroup(model: ModelId): ModelGroupId {
+  if ((MODEL_GROUPS['ensemble'] as readonly string[]).includes(model)) {
+    return 'ensemble'
+  }
+  return 'high-res'
+}
 
 export interface ModelConfig {
   name: string
@@ -83,5 +107,38 @@ export const MODEL_CONFIG: Record<ModelId, ModelConfig> = {
     resolution: '0.1° (~10km)',
     updateTimes: '00z, 12z',
     forecastLength: '7 days',
+  },
+  'ec-aifs': {
+    name: 'EC-AIFS',
+    color: '#e11d48',
+    description: 'ECMWF Artificial Intelligence Forecast System',
+    hasRegional: false,
+    chartProvider: 'tropicaltidbits',
+    dataProvider: 'open-meteo',
+    resolution: '0.25° (~25km)',
+    updateTimes: '00z, 12z',
+    forecastLength: '10 days',
+  },
+  gefs: {
+    name: 'GEFS',
+    color: '#7c3aed',
+    description: 'Global Ensemble Forecast System (31 members)',
+    hasRegional: false,
+    chartProvider: 'tropicaltidbits',
+    dataProvider: 'open-meteo',
+    resolution: '0.5° (~50km)',
+    updateTimes: '00z, 06z, 12z, 18z',
+    forecastLength: '16 days',
+  },
+  eps: {
+    name: 'EPS',
+    color: '#db2777',
+    description: 'ECMWF Ensemble Prediction System (51 members)',
+    hasRegional: false,
+    chartProvider: 'tropicaltidbits',
+    dataProvider: 'open-meteo',
+    resolution: '0.4° (~40km)',
+    updateTimes: '00z, 12z',
+    forecastLength: '15 days',
   },
 }

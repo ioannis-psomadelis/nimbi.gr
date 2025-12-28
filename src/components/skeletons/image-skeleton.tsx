@@ -4,17 +4,21 @@ interface ImageSkeletonProps {
   className?: string
 }
 
+// TT images are approximately 1180x904 (1.3:1 aspect ratio)
+const ASPECT_RATIO = '1180 / 904'
+
 export function ImageSkeleton({ className }: ImageSkeletonProps) {
   return (
     <div
       className={cn(
-        'bg-muted/30 overflow-hidden',
-        className?.includes('absolute') ? 'w-full h-full' : 'min-h-[400px]',
+        'bg-muted/30 overflow-hidden w-full',
+        className?.includes('absolute') ? 'h-full' : '',
         className
       )}
+      style={{ aspectRatio: className?.includes('absolute') ? undefined : ASPECT_RATIO }}
     >
-      {/* Weather map skeleton - mimics Meteociel chart layout */}
-      <div className="w-full h-full min-h-[400px] relative animate-pulse">
+      {/* Weather map skeleton - mimics chart layout */}
+      <div className="w-full h-full relative animate-pulse">
         {/* Map background with grid pattern */}
         <div className="absolute inset-0 bg-gradient-to-b from-muted/40 via-muted/20 to-muted/40" />
 

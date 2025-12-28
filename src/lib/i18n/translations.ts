@@ -184,6 +184,11 @@ export const translations = {
       locationTimeout: 'Location request timed out. Try again or search.',
       noResultsFound: 'No cities found. Try a different search.',
 
+      // EU Region Error
+      euOnlyTitle: 'Region Not Supported',
+      euOnlyDescription: 'nimbi.gr currently only supports locations within Europe.',
+      euOnlyHint: 'Please search for a location within the European region.',
+
       // Weekly Outlook
       weeklyOutlook: 'Weekly Outlook',
       basedOn: 'Based on',
@@ -311,6 +316,38 @@ export const translations = {
       share: 'Share',
       linkCopied: 'Link copied!',
       shareForecastText: 'Weather forecast for {{location}}',
+
+      // Model Groups
+      'modelGroup.high-res': 'High Resolution',
+      'modelGroup.ensemble': 'Ensemble',
+
+      // Model Names
+      'modelName.ecmwf-hres': 'ECMWF HD',
+      'modelName.icon': 'ICON',
+      'modelName.arpege': 'ARPEGE',
+      'modelName.gfs': 'GFS',
+      'modelName.gem': 'GEM',
+      'modelName.ukmo': 'UKMO',
+      'modelName.ec-aifs': 'EC-AIFS',
+      'modelName.gefs': 'GEFS',
+      'modelName.eps': 'EPS',
+
+      // Chart Parameters (Tropical Tidbits)
+      'param.mslp': 'Pressure & Precip',
+      'param.t2m': 'Temp 2m',
+      'param.t850': 'Temp 850',
+      'param.wind': 'Wind',
+      'param.jet': 'Jet Stream',
+      'param.z500': '500mb Heights',
+      'param.cape': 'CAPE',
+      'param.precip24': 'Precip 24h',
+      'param.snow': 'Snowfall',
+      'param.pwat': 'PWAT',
+      'param.ir': 'Satellite',
+
+      // Scope
+      'scope.europe': 'Europe',
+      'scope.regional': 'Regional',
     },
   },
   el: {
@@ -498,6 +535,11 @@ export const translations = {
       locationTimeout: 'Λήξη χρόνου αναμονής. Δοκιμάστε ξανά ή αναζητήστε.',
       noResultsFound: 'Δεν βρέθηκαν πόλεις. Δοκιμάστε διαφορετική αναζήτηση.',
 
+      // EU Region Error
+      euOnlyTitle: 'Μη Υποστηριζόμενη Περιοχή',
+      euOnlyDescription: 'Το nimbi.gr υποστηρίζει προς το παρόν μόνο τοποθεσίες εντός Ευρώπης.',
+      euOnlyHint: 'Παρακαλώ αναζητήστε μια τοποθεσία εντός της ευρωπαϊκής περιοχής.',
+
       // Weekly Outlook
       weeklyOutlook: 'Εβδομαδιαία Πρόβλεψη',
       basedOn: 'Βασισμένο στο',
@@ -625,6 +667,38 @@ export const translations = {
       share: 'Κοινοποίηση',
       linkCopied: 'Ο σύνδεσμος αντιγράφηκε!',
       shareForecastText: 'Πρόγνωση καιρού για {{location}}',
+
+      // Model Groups
+      'modelGroup.high-res': 'Υψηλή Ανάλυση',
+      'modelGroup.ensemble': 'Ensemble',
+
+      // Model Names
+      'modelName.ecmwf-hres': 'ECMWF HD',
+      'modelName.icon': 'ICON',
+      'modelName.arpege': 'ARPEGE',
+      'modelName.gfs': 'GFS',
+      'modelName.gem': 'GEM',
+      'modelName.ukmo': 'UKMO',
+      'modelName.ec-aifs': 'EC-AIFS',
+      'modelName.gefs': 'GEFS',
+      'modelName.eps': 'EPS',
+
+      // Chart Parameters (Tropical Tidbits)
+      'param.mslp': 'Πίεση & Υετός',
+      'param.t2m': 'Θερμ. 2m',
+      'param.t850': 'Θερμ. 850',
+      'param.wind': 'Άνεμος',
+      'param.jet': 'Jet Stream',
+      'param.z500': 'Ύψη 500mb',
+      'param.cape': 'CAPE',
+      'param.precip24': 'Υετός 24ω',
+      'param.snow': 'Χιονόπτωση',
+      'param.pwat': 'PWAT',
+      'param.ir': 'Δορυφόρος',
+
+      // Scope
+      'scope.europe': 'Ευρώπη',
+      'scope.regional': 'Περιφέρεια',
     },
   },
 }

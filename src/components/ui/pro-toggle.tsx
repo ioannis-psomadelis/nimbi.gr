@@ -26,14 +26,14 @@ export function ProToggle({ enabled, onToggle, isLoading }: ProToggleProps) {
           className={cn(
             // Base styles
             'relative rounded-xl',
-            'border border-border',
+            'border',
             'transition-all duration-200',
             'flex items-center',
             'h-9 px-2.5 gap-2',
             // Background based on state
             enabled
-              ? 'bg-primary/15 border-primary/30 hover:bg-primary/20'
-              : 'bg-muted hover:bg-secondary',
+              ? 'bg-primary/15 border-primary/40 hover:bg-primary/25'
+              : 'bg-secondary/80 border-border/50 hover:bg-secondary',
             // Disabled/loading state
             isLoading && 'opacity-70 cursor-wait',
             // Focus ring
@@ -57,26 +57,31 @@ export function ProToggle({ enabled, onToggle, isLoading }: ProToggleProps) {
             </span>
           </div>
 
-          {/* Switch indicator */}
-          <div
+          {/* Switch */}
+          <span
+            style={{ height: '20px', width: '36px' }}
             className={cn(
-              'relative rounded-full transition-colors duration-200',
-              'border w-7 h-4',
+              'relative inline-flex shrink-0 items-center rounded-full transition-colors duration-200',
               enabled
-                ? 'bg-primary border-primary'
-                : 'bg-muted-foreground/20 border-border'
+                ? 'bg-primary'
+                : 'bg-input dark:bg-input/80'
             )}
           >
-            {/* Thumb */}
             <span
+              style={{
+                height: '16px',
+                width: '16px',
+                transform: enabled ? 'translateX(18px)' : 'translateX(2px)',
+                transition: 'transform 200ms ease-in-out',
+              }}
               className={cn(
-                'absolute rounded-full bg-white top-0.5 left-0.5 w-2.5 h-2.5',
-                'transform transition-transform duration-200 shadow-sm',
-                enabled ? 'translate-x-3' : 'translate-x-0',
+                'pointer-events-none absolute rounded-full',
+                'bg-background dark:bg-foreground',
+                enabled && 'dark:bg-primary-foreground',
                 isLoading && 'animate-pulse'
               )}
             />
-          </div>
+          </span>
         </button>
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={8}>

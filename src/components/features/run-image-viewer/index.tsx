@@ -6,13 +6,18 @@ import { Card, CardContent } from '@/components/ui/card'
 import {
   CHART_PARAMS,
   buildChartUrl,
-  getChartAttribution,
-  type ChartParamId,
   type ChartRegion,
-  type ChartScope,
   detectBestRegion,
 } from '../../../lib/utils/runs'
+import { TT_MODEL_CODES } from '../../../lib/utils/tropicaltidbits'
 import { MODEL_CONFIG } from '../../../types/models'
+import {
+  useWeatherStore,
+  useSelectedScope,
+  useSelectedParam,
+  useAvailableParams,
+  useSelectedMeteocielRegion,
+} from '../../../stores/weather-store'
 import {
   type RunImageViewerProps,
   type ForecastDateTime,
@@ -28,11 +33,22 @@ import { HourSlider } from './hour-slider'
 
 export function RunImageViewer({ runId, model, latitude, longitude, forecastHourRef }: RunImageViewerProps) {
   const { t, i18n } = useTranslation()
-  const [selectedParam, setSelectedParam] = useState<ChartParamId>('0')
+
+  // Use weather store for param and scope state
+  const selectedParam = useSelectedParam()
+  const setSelectedParam = useWeatherStore((s) => s.setSelectedParam)
+  const scope = useSelectedScope()
+  const setScope = useWeatherStore((s) => s.setSelectedScope)
+  const selectedMeteocielRegion = useSelectedMeteocielRegion()
+  const setSelectedMeteocielRegion = useWeatherStore((s) => s.setSelectedMeteocielRegion)
+  const availableParams = useAvailableParams()
+
+  // Local state for forecast hour (not persisted)
   const [forecastHour, setForecastHour] = useState(24)
-  const [scope, setScope] = useState<ChartScope>('europe')
+
+  // Detect best region based on coordinates
   const detectedRegion = latitude && longitude ? detectBestRegion(latitude, longitude) : 'europe'
-  const [selectedRegion, setSelectedRegion] = useState<ChartRegion>(detectedRegion)
+  const selectedRegion: ChartRegion = scope === 'regional' ? (selectedMeteocielRegion as ChartRegion) : detectedRegion
 
   // Track previous model to detect changes and snap hour synchronously
   const prevModelRef = useRef(model)
@@ -72,9 +88,6 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
     }
   }, [forecastHourRef, goToPrevious, goToNext])
 
-  // All params are available for ECMWF-HRES (it has full parameter support)
-  const availableParams = useMemo(() => CHART_PARAMS, [])
-
   // Available regions for this location (memoized)
   const availableRegions = useMemo(() => {
     const regions: ChartRegion[] = ['europe']
@@ -87,25 +100,40 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
   // Get the config for the selected parameter
   const selectedParamConfig = CHART_PARAMS.find(p => p.id === selectedParam)
 
-  // Get model config and chart attribution
+  // Get model config
   const modelConfig = MODEL_CONFIG[model]
-  const chartAttribution = getChartAttribution(model)
 
   // Limit params for Wetterzentrale (only MSLP and 850hPa temp available)
   const effectiveParam = useMemo(() => {
     if (modelConfig.chartProvider === 'wetterzentrale') {
-      // Only mode 0 (MSLP) and mode 1 (850 temp) available
-      return ['0', '1'].includes(selectedParam) ? selectedParam : '0'
+      // Only mslp and t850 available for Wetterzentrale
+      return ['mslp', 't850'].includes(selectedParam) ? selectedParam : 'mslp'
     }
     return selectedParam
   }, [selectedParam, modelConfig.chartProvider])
 
-  const effectiveMode = CHART_PARAMS.find(p => p.id === effectiveParam)?.mode ?? 0
-
   // Build the target image URL - use effectiveForecastHour for immediate response
-  const lat = latitude ?? 38
-  const lon = longitude ?? 24
-  const targetUrl = buildChartUrl(model, runId, effectiveMode, effectiveForecastHour, scope, lat, lon, selectedRegion)
+  const coords = { lat: latitude ?? 38, lon: longitude ?? 24 }
+  const targetUrl = buildChartUrl(
+    model,
+    runId,
+    effectiveParam,
+    effectiveForecastHour,
+    scope,
+    coords,
+    selectedRegion
+  )
+
+  // Determine chart attribution based on scope and provider
+  const chartAttribution = useMemo(() => {
+    if (scope === 'europe' && TT_MODEL_CODES[model]) {
+      return { name: 'Tropical Tidbits', url: 'https://www.tropicaltidbits.com' }
+    }
+    if (modelConfig.chartProvider === 'wetterzentrale') {
+      return { name: 'Wetterzentrale.de', url: 'https://www.wetterzentrale.de' }
+    }
+    return { name: 'Meteociel.fr', url: 'https://www.meteociel.fr' }
+  }, [scope, model, modelConfig.chartProvider])
 
   // Calculate forecast date/time from run ID and forecast hour (memoized)
   const forecastDateTime: ForecastDateTime = useMemo(() => {
@@ -153,15 +181,15 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
           selectedParam={selectedParam}
           onChange={setSelectedParam}
           availableParams={availableParams}
-          disabledParams={modelConfig.chartProvider === 'wetterzentrale' ? ['9', '2', '14', '5'] : []}
+          disabledParams={modelConfig.chartProvider === 'wetterzentrale' ? ['t2m', 'wind', 'jet', 'z500', 'cape', 'precip24', 'snow', 'pwat', 'ir'] : []}
         />
 
         {/* Region Selector - Europe/Regional toggle with country selection */}
         <RegionSelector
           scope={scope}
           onScopeChange={setScope}
-          selectedRegion={selectedRegion}
-          onRegionChange={setSelectedRegion}
+          selectedRegion={selectedMeteocielRegion as ChartRegion}
+          onRegionChange={(region) => setSelectedMeteocielRegion(region)}
           availableRegions={availableRegions}
           model={model}
           latitude={latitude}

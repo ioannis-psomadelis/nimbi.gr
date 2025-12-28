@@ -22,10 +22,14 @@ export {
   useSelectedModel,
   useSelectedRun,
   useSelectedRegion,
+  useSelectedScope,
+  useSelectedMeteocielRegion,
   useSelectedParam,
   useForecastHour,
+  useAvailableModels,
+  useAvailableParams,
+  useCanSwitchToRegional,
   type Region,
-  type ChartParam,
   type ModelRun,
 } from './weather-store'
 

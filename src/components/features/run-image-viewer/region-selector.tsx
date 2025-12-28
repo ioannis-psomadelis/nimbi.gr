@@ -3,7 +3,7 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Globe, MapPin } from 'lucide-react'
-import { type ChartRegion, REGION_CONFIG, type ChartScope } from '../../../lib/utils/runs'
+import { type ChartRegion, type MeteocielRegion, REGION_CONFIG, type ChartScope } from '../../../lib/utils/runs'
 import { MODEL_CONFIG, type ModelId } from '../../../types/models'
 import { WETTERZENTRALE_REGIONS, detectWetterzenRegion } from '../../../lib/utils/wetterzentrale'
 
@@ -11,7 +11,7 @@ interface RegionSelectorProps {
   scope: ChartScope
   onScopeChange: (scope: ChartScope) => void
   selectedRegion: ChartRegion
-  onRegionChange: (region: ChartRegion) => void
+  onRegionChange: (region: MeteocielRegion) => void
   availableRegions: ChartRegion[]
   model: ModelId
   latitude?: number

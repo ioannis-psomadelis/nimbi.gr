@@ -12,9 +12,19 @@ export interface DayForecast {
   tempLow: number
   precipTotal: number
   precipHours: number
+  precipProbability: number
   condition: WeatherCondition
   windMax: number
+  windAvg: number
   pressureTrend: PressureTrend
+  // Additional metrics
+  feelsLikeHigh: number
+  feelsLikeLow: number
+  uvMax: number
+  cloudCoverAvg: number
+  // Hourly data for charts
+  hourlyTemps: number[]
+  hourlyPrecip: number[]
 }
 
 export interface DayComparison {
@@ -54,6 +64,20 @@ export interface NarrativeDay {
   tempHigh: number
   tempLow: number
   modelNote?: string
+  // Enhanced data
+  precipTotal: number
+  precipProbability: number // 0-100
+  windMax: number
+  windAvg: number
+  agreement: number // 0-100 overall model agreement
+  // Additional metrics
+  feelsLikeHigh: number
+  feelsLikeLow: number
+  uvMax: number
+  cloudCoverAvg: number
+  // Hourly breakdown (for expanded view)
+  hourlyTemps?: number[] // 24 hours
+  hourlyPrecip?: number[] // 24 hours
 }
 
 export interface WeeklyNarrative {

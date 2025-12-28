@@ -88,8 +88,9 @@ export const ImageDisplay = memo(function ImageDisplay({
     preloadImage(targetUrl)
   }
 
+  // TT images are ~1180x904 (1.3:1 aspect ratio)
   return (
-    <div className="relative bg-muted/30 min-h-[300px] max-h-[70vh] overflow-auto">
+    <div className="relative bg-muted/30 overflow-auto" style={{ aspectRatio: displayedUrl ? undefined : '1180 / 904' }}>
       {/* Currently displayed image */}
       {displayedUrl && (
         <img

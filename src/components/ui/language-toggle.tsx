@@ -1,17 +1,16 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import { changeLanguage } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
+import { useLocalePath, type Language } from '@/lib/route-context'
 
 const languages = [
-  { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  { code: 'el', name: 'Greek', nativeName: 'Ελληνικά', flag: '🇬🇷' },
-] as const
+  { code: 'en' as const, name: 'English', nativeName: 'English', flag: '🇬🇧' },
+  { code: 'el' as const, name: 'Greek', nativeName: 'Ελληνικά', flag: '🇬🇷' },
+]
 
 export function LanguageToggle() {
-  const { i18n } = useTranslation()
+  const { lang, navigateToLang } = useLocalePath()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -25,11 +24,11 @@ export function LanguageToggle() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const currentLang = languages.find(l => l.code === i18n.language) || languages[0]
+  const currentLangObj = languages.find(l => l.code === lang) || languages[1]
 
-  const handleSelect = (code: 'en' | 'el') => {
-    changeLanguage(code)
+  const handleSelect = (code: Language) => {
     setIsOpen(false)
+    navigateToLang(code)
   }
 
   return (
@@ -51,8 +50,8 @@ export function LanguageToggle() {
         aria-expanded={isOpen}
       >
         {/* Flag only on mobile, text on desktop */}
-        <span className="text-base md:hidden">{currentLang.flag}</span>
-        <span className="hidden md:inline text-sm">{currentLang.nativeName}</span>
+        <span className="text-base md:hidden">{currentLangObj.flag}</span>
+        <span className="hidden md:inline text-sm">{currentLangObj.nativeName}</span>
         <svg
           className={cn('text-muted-foreground transition-transform duration-200 w-3 h-3', isOpen && 'rotate-180')}
           fill="none"
@@ -78,14 +77,14 @@ export function LanguageToggle() {
           z-50
         `}
       >
-        {languages.map((lang, index) => {
-          const isActive = lang.code === i18n.language
+        {languages.map((langItem, index) => {
+          const isActive = langItem.code === lang
           const isFirst = index === 0
           const isLast = index === languages.length - 1
           return (
             <button
-              key={lang.code}
-              onClick={() => handleSelect(lang.code)}
+              key={langItem.code}
+              onClick={() => handleSelect(langItem.code)}
               className={`
                 w-full px-3 py-2.5 flex items-center gap-3
                 transition-colors duration-150
@@ -97,10 +96,10 @@ export function LanguageToggle() {
                 }
               `}
             >
-              <span className="text-xl">{lang.flag}</span>
+              <span className="text-xl">{langItem.flag}</span>
               <div className="flex flex-col items-start">
-                <span className="text-sm font-medium">{lang.nativeName}</span>
-                <span className="text-[10px] text-muted-foreground">{lang.name}</span>
+                <span className="text-sm font-medium">{langItem.nativeName}</span>
+                <span className="text-[10px] text-muted-foreground">{langItem.name}</span>
               </div>
               {isActive && (
                 <svg className="w-4 h-4 ml-auto text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">

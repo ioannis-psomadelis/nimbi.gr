@@ -8,6 +8,9 @@ export const MODEL_RUN_TIMES: Record<ModelId, number[]> = {
   gfs: [0, 6, 12, 18],
   gem: [0, 12],
   ukmo: [0, 12],
+  'ec-aifs': [0, 12],      // EC-AIFS runs at 00z and 12z like ECMWF
+  gefs: [0, 6, 12, 18],    // GEFS runs 4x daily like GFS
+  eps: [0, 12],            // EPS runs at 00z and 12z like ECMWF
 }
 
 // Regional chart support for Meteociel (ECMWF)
@@ -164,60 +167,124 @@ export function detectBestRegion(lat: number, lon: number): ChartRegion {
   return 'europe'
 }
 
+// Chart scopes - Europe-wide or Regional zoom
+export const CHART_SCOPES = ['europe', 'regional'] as const
+
 // Meteociel chart parameters with detailed info for tooltips/modals
-// GFS URL pattern: https://modeles16.meteociel.fr/modeles/gfs/runs/{runId}/gfs-{mode}-{hour}.png
+// Core params are mapped to both Tropical Tidbits and Meteociel
+// TT-only params have meteocielMode: null
 export const CHART_PARAMS = [
+  // Core (mapped to both TT and Meteociel)
   {
-    id: '0',
-    mode: 0,
-    label: 'Pressure',
+    id: 'mslp',
+    ttCode: 'mslp_pcpn_frzn',
+    meteocielMode: 0,
+    label: 'Pressure & Precip',
     shortLabel: 'MSLP',
-    description: 'Mean Sea Level Pressure & 500hPa Geopotential',
-    info: 'Shows surface pressure patterns (highs and lows) combined with the 500hPa geopotential height. This helps identify weather systems, fronts, and the overall atmospheric flow pattern. High pressure areas typically bring clear weather, while low pressure areas are associated with storms and precipitation.',
+    description: 'Mean Sea Level Pressure & Precipitation (Rain/Frozen)',
+    info: 'Shows surface pressure patterns combined with precipitation. High pressure areas typically bring clear weather, while low pressure areas are associated with storms.',
   },
   {
-    id: '9',
-    mode: 9,
+    id: 't2m',
+    ttCode: 'T2m',
+    meteocielMode: 9,
     label: 'Temp 2m',
     shortLabel: 'T2m',
     description: 'Temperature at 2 meters',
-    info: 'The forecasted air temperature at 2 meters above ground level - what you would feel outside. This is the standard height for measuring air temperature and is most relevant for daily weather conditions.',
+    info: 'The forecasted air temperature at 2 meters above ground level.',
   },
   {
-    id: '1',
-    mode: 1,
+    id: 't850',
+    ttCode: 'T850',
+    meteocielMode: 1,
     label: 'Temp 850',
     shortLabel: 'T850',
-    description: 'Temperature at 850hPa (~1500m altitude)',
-    info: 'Temperature at the 850hPa pressure level, approximately 1,500 meters above sea level. This eliminates terrain effects and is useful for tracking air masses, identifying warm/cold fronts, and predicting precipitation type (rain vs snow).',
+    description: 'Temperature at 850hPa (~1500m)',
+    info: 'Temperature at approximately 1,500 meters above sea level.',
   },
   {
-    id: '2',
-    mode: 2,
-    label: 'Precip',
-    shortLabel: 'Rain',
-    description: 'Accumulated Precipitation',
-    info: 'Total precipitation accumulation including rain, snow, sleet, and other forms. Values are typically shown as millimeters of liquid water equivalent. Higher values indicate more intense precipitation events.',
-  },
-  {
-    id: '14',
-    mode: 14,
+    id: 'wind',
+    ttCode: 'mslp_wind',
+    meteocielMode: 14,
     label: 'Wind',
     shortLabel: 'Wind',
-    description: 'Wind Speed at 10 meters',
-    info: 'Wind speed and direction at 10 meters above ground level - the standard measurement height for surface winds. Arrows or barbs show direction, while colors indicate speed intensity. Important for understanding storm impacts and general weather conditions.',
+    description: 'MSLP & 10m Wind',
+    info: 'Wind speed and direction at 10 meters above ground level.',
   },
   {
-    id: '5',
-    mode: 5,
+    id: 'jet',
+    ttCode: 'uv250',
+    meteocielMode: 5,
     label: 'Jet Stream',
     shortLabel: 'Jet',
-    description: 'Upper-level Jet Stream',
-    info: 'The jet stream is a fast-flowing river of air at high altitude (around 30,000-40,000 feet). It steers weather systems and separates air masses. Strong jet streams are associated with active weather patterns, while weak or split jets can lead to blocking patterns.',
+    description: '250mb Wind (Jet Stream)',
+    info: 'The jet stream at high altitude.',
+  },
+  // TT-only params (meteocielMode: null)
+  {
+    id: 'z500',
+    ttCode: 'z500_vort',
+    meteocielMode: null,
+    label: '500mb Heights',
+    shortLabel: 'Z500',
+    description: '500mb Height & Vorticity',
+    info: 'Mid-level atmospheric pattern.',
+  },
+  {
+    id: 'cape',
+    ttCode: 'cape',
+    meteocielMode: null,
+    label: 'CAPE',
+    shortLabel: 'CAPE',
+    description: 'Surface-Based CAPE (Thunderstorm potential)',
+    info: 'Indicates thunderstorm potential.',
+  },
+  {
+    id: 'precip24',
+    ttCode: 'apcpn24',
+    meteocielMode: null,
+    label: 'Precip 24h',
+    shortLabel: 'Precip',
+    description: '24-hour Accumulated Precipitation',
+    info: 'Total precipitation over 24 hours.',
+  },
+  {
+    id: 'snow',
+    ttCode: 'asnow',
+    meteocielMode: null,
+    label: 'Snowfall',
+    shortLabel: 'Snow',
+    description: 'Total Snowfall (10:1 SLR)',
+    info: 'Accumulated snowfall.',
+  },
+  {
+    id: 'pwat',
+    ttCode: 'mslp_pwat',
+    meteocielMode: null,
+    label: 'PWAT',
+    shortLabel: 'PWAT',
+    description: 'Precipitable Water',
+    info: 'Total water vapor in atmosphere.',
+  },
+  {
+    id: 'ir',
+    ttCode: 'ir',
+    meteocielMode: null,
+    label: 'Satellite',
+    shortLabel: 'IR',
+    description: 'Simulated IR Satellite',
+    info: 'Model-simulated infrared satellite.',
   },
 ] as const
 
-export type ChartParamId = typeof CHART_PARAMS[number]['id']
+export type ChartParamId = (typeof CHART_PARAMS)[number]['id']
+
+export function getAvailableParams(scope: (typeof CHART_SCOPES)[number]) {
+  if (scope === 'europe') {
+    return CHART_PARAMS
+  }
+  return CHART_PARAMS.filter(p => p.meteocielMode !== null)
+}
 
 // Model-specific URL patterns from Meteociel
 // GFS: https://modeles16.meteociel.fr/modeles/gfs/runs/{runId}/gfs-{mode}-{hour}.png
@@ -263,8 +330,8 @@ function getModelRunId(model: ModelId, runId: string): string {
   return runId
 }
 
-// Chart scope - Europe-wide or Regional zoom
-export type ChartScope = 'europe' | 'regional'
+// Derive ChartScope type from CHART_SCOPES constant
+export type ChartScope = (typeof CHART_SCOPES)[number]
 
 // Build Meteociel chart URL for supported models (ECMWF, GFS, GEM, UKMO)
 export function buildMeteocielUrl(
@@ -314,6 +381,9 @@ import {
   type WetterzenParamCode,
 } from './wetterzentrale'
 
+// Import Tropical Tidbits utilities
+import { buildTropicalTidbitsUrl, TT_MODEL_CODES } from './tropicaltidbits'
+
 // Map Meteociel mode to Wetterzentrale param
 function modeToWetterzenParam(mode: number): WetterzenParamCode {
   // Mode 0 = MSLP (Pressure), Mode 1 = 850hPa Temp
@@ -329,32 +399,44 @@ function modeToWetterzenParam(mode: number): WetterzenParamCode {
 export function buildChartUrl(
   model: ModelId,
   runId: string,
-  mode: number,
+  param: ChartParamId,
   forecastHour: number,
   scope: ChartScope,
-  lat: number,
-  lon: number,
-  meteocielRegion: ChartRegion = 'europe'
+  coords: { lat: number; lon: number },
+  meteocielRegion?: MeteocielRegion,
 ): string {
   const config = MODEL_CONFIG[model]
+  const paramConfig = CHART_PARAMS.find(p => p.id === param)
 
-  // For Wetterzentrale models (ICON, ARPEGE)
-  if (config.chartProvider === 'wetterzentrale') {
-    const runHour = parseInt(runId.slice(-2), 10)
-    const wetterzenRegion: WetterzenRegionCode = scope === 'regional'
-      ? detectWetterzenRegion(lat, lon)
-      : 'EU'
-    const param = modeToWetterzenParam(mode)
-    return buildWetterzenUrl(model as 'icon' | 'arpege', wetterzenRegion, runHour, forecastHour, param)
+  // TT-only params force Europe scope
+  const effectiveScope = paramConfig?.meteocielMode === null ? 'europe' : scope
+
+  // Select provider based on scope
+  if (effectiveScope === 'europe') {
+    // Check if model is available on TT
+    if (TT_MODEL_CODES[model]) {
+      return buildTropicalTidbitsUrl(model, runId, param, forecastHour)
+    }
+    // Fallback for models not on TT (e.g., arpege)
+    if (config.chartProvider === 'wetterzentrale') {
+      const runHour = parseInt(runId.slice(-2), 10)
+      const wetterzenRegion = 'EU' as WetterzenRegionCode
+      const wetterzenParam = modeToWetterzenParam(paramConfig?.meteocielMode ?? 0)
+      return buildWetterzenUrl(model as 'icon' | 'arpege', wetterzenRegion, runHour, forecastHour, wetterzenParam)
+    }
+    return buildMeteocielUrl(model, runId, paramConfig?.meteocielMode ?? 0, forecastHour, 'europe')
   }
 
-  // For Meteociel models (ECMWF, GFS, GEM, UKMO)
-  // Use regional if scope is regional and model supports it
-  const effectiveRegion = scope === 'regional' && config.hasRegional
-    ? meteocielRegion
-    : 'europe'
+  // Regional scope - use legacy providers
+  if (config.chartProvider === 'wetterzentrale') {
+    const runHour = parseInt(runId.slice(-2), 10)
+    const wetterzenRegion = detectWetterzenRegion(coords.lat, coords.lon)
+    const wetterzenParam = modeToWetterzenParam(paramConfig?.meteocielMode ?? 0)
+    return buildWetterzenUrl(model as 'icon' | 'arpege', wetterzenRegion, runHour, forecastHour, wetterzenParam)
+  }
 
-  return buildMeteocielUrl(model, runId, mode, forecastHour, effectiveRegion)
+  const region = meteocielRegion ?? detectBestRegion(coords.lat, coords.lon)
+  return buildMeteocielUrl(model, runId, paramConfig?.meteocielMode ?? 0, forecastHour, region)
 }
 
 // Get chart provider attribution for a model

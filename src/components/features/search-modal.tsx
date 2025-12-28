@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Search, MapPin, Loader2, X, Clock } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -22,6 +21,7 @@ import { useDebounce } from '@/lib/utils/debounce'
 import { useLocationsStore, type RecentSearch } from '@/stores'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { trackEvent } from '@/lib/posthog'
+import { useLocalePath } from '@/lib/route-context'
 
 interface SearchModalProps {
   /** Trigger style variant */
@@ -38,7 +38,7 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
-  const navigate = useNavigate()
+  const { navigateToObservatory } = useLocalePath()
 
   // Zustand stores
   const recentSearches = useLocationsStore((s) => s.recentSearches)
@@ -57,6 +57,7 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
   }, [isMobile])
 
   // Keyboard shortcut: Ctrl+K / Cmd+K to open search
+  // Also listen for custom 'open-search' event
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -64,8 +65,15 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
         setIsSearchOpen(true)
       }
     }
+    const handleOpenSearch = () => {
+      setIsSearchOpen(true)
+    }
     window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
+    window.addEventListener('open-search', handleOpenSearch)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('open-search', handleOpenSearch)
+    }
   }, [])
 
   // Focus input when modal opens
@@ -122,14 +130,14 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
       })
       const { slug } = await createLocationFromCoords({ data: { lat: result.lat, lon: result.lon } })
       trackEvent('location_selected', { slug, source: 'search' })
-      await navigate({ to: '/observatory/$slug', params: { slug } })
-      // Close modal after successful navigation
+      // Use locale-aware navigation
+      navigateToObservatory(slug)
       setIsSearchOpen(false)
     } catch (error) {
       console.error('Navigation failed:', error)
       setIsNavigating(false)
     }
-  }, [navigate, addRecentSearch])
+  }, [addRecentSearch, navigateToObservatory])
 
   const selectRecentSearch = useCallback(async (search: RecentSearch) => {
     setIsNavigating(true)
@@ -144,13 +152,14 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
       })
       const { slug } = await createLocationFromCoords({ data: { lat: search.lat, lon: search.lon } })
       trackEvent('location_selected', { slug, source: 'recent' })
-      await navigate({ to: '/observatory/$slug', params: { slug } })
+      // Use locale-aware navigation
+      navigateToObservatory(slug)
       setIsSearchOpen(false)
     } catch (error) {
       console.error('Navigation failed:', error)
       setIsNavigating(false)
     }
-  }, [navigate, addRecentSearch])
+  }, [addRecentSearch, navigateToObservatory])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {

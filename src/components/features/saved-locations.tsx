@@ -1,9 +1,9 @@
 'use client'
 
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from '@tanstack/react-router'
 import { useLocationsStore, type SavedLocation } from '@/stores'
 import { createLocationFromCoords } from '@/lib/server/locations'
+import { useLocalePath } from '@/lib/route-context'
 
 interface SavedLocationsProps {
   currentLat?: number
@@ -15,7 +15,7 @@ interface SavedLocationsProps {
 
 export function SavedLocations({ currentLat, currentLon, currentName, initialLocations = [] }: SavedLocationsProps) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  const { navigateToObservatory } = useLocalePath()
 
   // Use Zustand store for mutations and client-side state
   const storeLocations = useLocationsStore((s) => s.savedLocations)
@@ -49,7 +49,7 @@ export function SavedLocations({ currentLat, currentLon, currentName, initialLoc
       return
     }
     const { slug } = await createLocationFromCoords({ data: { lat: location.lat, lon: location.lon } })
-    navigate({ to: '/observatory/$slug', params: { slug } })
+    navigateToObservatory(slug)
   }
 
   const isCurrentSaved = locations.some(

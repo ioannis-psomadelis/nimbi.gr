@@ -1,15 +1,14 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useNavigate, Link } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { LanguageToggle } from '@/components/ui/language-toggle'
 import { ProToggle } from '@/components/ui/pro-toggle'
 import { CLOUD_PATH } from '@/components/ui/logo'
 import { SearchModal } from '@/components/features/search-modal'
-import { usePreferencesStore } from '@/stores'
-import { getQueryClient } from '@/lib/query-client'
+import { useLocalePath } from '@/lib/route-context'
 
 interface HeaderProps {
   proMode?: boolean
@@ -18,27 +17,13 @@ interface HeaderProps {
 
 export function Header({ proMode = false, leftSlot }: HeaderProps) {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const setProMode = usePreferencesStore((s) => s.setProMode)
+  const { getPath, navigateToPro } = useLocalePath()
 
   const handleProToggle = useCallback((enabled: boolean) => {
-    // 1. Save the new pro mode setting to Zustand store (persisted to cookie)
-    setProMode(enabled)
+    navigateToPro(enabled)
+  }, [navigateToPro])
 
-    // 2. Clear all weather queries from React Query cache
-    // This forces a fresh fetch with the new pro mode setting
-    const queryClient = getQueryClient()
-    queryClient.removeQueries({ queryKey: ['weather'] })
-
-    // 3. Small delay to ensure cookie is written before reload
-    // Then full page reload for clean SSR
-    setTimeout(() => {
-      navigate({
-        to: window.location.pathname,
-        reloadDocument: true
-      })
-    }, 50)
-  }, [navigate, setProMode])
+  const homePath = getPath('/')
 
   return (
     <header
@@ -51,7 +36,7 @@ export function Header({ proMode = false, leftSlot }: HeaderProps) {
         {/* Left: Optional slot + Logo */}
         <div className="flex items-center gap-2 shrink-0">
           {leftSlot}
-          <Link to="/" className="flex items-center gap-2.5 group">
+          <Link to={homePath} className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl bg-white/90 dark:bg-primary/15 flex items-center justify-center border border-white/50 dark:border-primary/20 group-hover:bg-white dark:group-hover:bg-primary/25 transition-colors shadow-md dark:shadow-none">
             <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CLOUD_PATH} />

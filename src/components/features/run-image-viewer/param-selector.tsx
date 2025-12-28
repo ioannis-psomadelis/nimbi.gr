@@ -18,7 +18,7 @@ type ChartParam = (typeof CHART_PARAMS)[number]
 interface ParamSelectorProps {
   selectedParam: ChartParamId
   onChange: (param: ChartParamId) => void
-  availableParams: readonly ChartParam[]
+  availableParams: ChartParam[]
   disabledParams?: ChartParamId[]
 }
 

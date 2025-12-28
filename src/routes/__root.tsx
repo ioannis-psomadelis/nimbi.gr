@@ -4,10 +4,9 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { I18nextProvider, useTranslation } from 'react-i18next'
 
-import { useEffect, useLayoutEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { useThemeEffect } from '../hooks/use-theme-effect'
-import i18n, { syncLanguageFromStorage } from '../lib/i18n'
-import { getServerLanguage } from '../lib/server/language'
+import i18n from '../lib/i18n'
 import { NavigationLoader } from '../components/layout/navigation-loader'
 import { PostHogProvider } from '../components/providers/posthog-provider'
 import { getQueryClient } from '../lib/query-client'
@@ -133,14 +132,16 @@ export function NotFoundComponent() {
 }
 
 export const Route = createRootRoute({
-  loader: async () => {
-    // Get language from cookie on server and apply it BEFORE rendering
-    const language = await getServerLanguage()
+  loader: async ({ location }) => {
+    // Detect language from URL path (URL takes priority over cookie)
+    const pathname = location.pathname
+    const urlLang = pathname.startsWith('/en/') || pathname === '/en' ? 'en' : 'el'
+
     // Change i18n language on server before any component renders
-    if (i18n.language !== language) {
-      await i18n.changeLanguage(language)
+    if (i18n.language !== urlLang) {
+      await i18n.changeLanguage(urlLang)
     }
-    return { language }
+    return { language: urlLang }
   },
   head: () => ({
     meta: [
@@ -290,21 +291,16 @@ export const Route = createRootRoute({
   notFoundComponent: NotFoundComponent,
 })
 
-// Root component - sets language from server and syncs on client
+// Root component - sets language from URL
 function RootComponent() {
   const { language } = Route.useLoaderData()
 
-  // Set language from server loader before first paint
+  // Set language from URL-based loader before first paint
   useLayoutEffect(() => {
     if (language && i18n.language !== language) {
       i18n.changeLanguage(language)
     }
   }, [language])
-
-  // Also sync from cookies on client (for changes after initial load)
-  useEffect(() => {
-    syncLanguageFromStorage()
-  }, [])
 
   return <Outlet />
 }

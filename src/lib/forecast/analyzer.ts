@@ -76,12 +76,20 @@ function extractDailyForecast(
   const windsRaw = data.hourly.wind_speed_10m.slice(startIdx, endIdx)
   const pressuresRaw = data.hourly.pressure_msl.slice(startIdx, endIdx)
 
+  // Additional data
+  const feelsLikeRaw = data.hourly.apparent_temperature?.slice(startIdx, endIdx) || []
+  const uvRaw = data.hourly.uv_index?.slice(startIdx, endIdx) || []
+  const precipProbRaw = data.hourly.precipitation_probability?.slice(startIdx, endIdx) || []
+
   // Filter out null values
   const temps = tempsRaw.filter((t): t is number => t !== null)
   const precips = precipsRaw.filter((p): p is number => p !== null)
   const clouds = cloudsRaw.filter((c): c is number => c !== null)
   const winds = windsRaw.filter((w): w is number => w !== null)
   const pressures = pressuresRaw.filter((p): p is number => p !== null)
+  const feelsLike = feelsLikeRaw.filter((f): f is number => f !== null)
+  const uvValues = uvRaw.filter((u): u is number => u !== null)
+  const precipProbs = precipProbRaw.filter((p): p is number => p !== null)
 
   if (temps.length === 0) return null
 
@@ -90,6 +98,7 @@ function extractDailyForecast(
   const avgTemp = temps.reduce((a, b) => a + b, 0) / temps.length
   const totalPrecip = precips.reduce((a, b) => a + b, 0)
   const precipHours = precips.filter((p) => p > 0.1).length
+  const maxPrecipProb = precipProbs.length > 0 ? Math.max(...precipProbs) : 0
 
   return {
     date,
@@ -98,9 +107,19 @@ function extractDailyForecast(
     tempLow: Math.round(Math.min(...temps)),
     precipTotal: Math.round(totalPrecip * 10) / 10,
     precipHours,
+    precipProbability: Math.round(maxPrecipProb),
     condition: getCondition(avgCloud, totalPrecip, avgTemp),
     windMax: winds.length > 0 ? Math.round(Math.max(...winds)) : 0,
+    windAvg: winds.length > 0 ? Math.round(winds.reduce((a, b) => a + b, 0) / winds.length) : 0,
     pressureTrend: getPressureTrend(pressures),
+    // Additional metrics
+    feelsLikeHigh: feelsLike.length > 0 ? Math.round(Math.max(...feelsLike)) : Math.round(Math.max(...temps)),
+    feelsLikeLow: feelsLike.length > 0 ? Math.round(Math.min(...feelsLike)) : Math.round(Math.min(...temps)),
+    uvMax: uvValues.length > 0 ? Math.round(Math.max(...uvValues) * 10) / 10 : 0,
+    cloudCoverAvg: Math.round(avgCloud),
+    // Hourly data for mini charts
+    hourlyTemps: temps.slice(0, 24).map(t => Math.round(t)),
+    hourlyPrecip: precips.slice(0, 24).map(p => Math.round(p * 10) / 10),
   }
 }
 

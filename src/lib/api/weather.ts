@@ -27,6 +27,9 @@ const MODEL_API_CONFIG: Record<ModelId, { endpoint: string; modelParam?: string 
   gfs: { endpoint: 'https://api.open-meteo.com/v1/gfs' },
   gem: { endpoint: 'https://api.open-meteo.com/v1/gem' },
   ukmo: { endpoint: 'https://api.open-meteo.com/v1/forecast', modelParam: 'ukmo_seamless' },
+  'ec-aifs': { endpoint: 'https://api.open-meteo.com/v1/ecmwf' }, // EC-AIFS uses ECMWF endpoint
+  gefs: { endpoint: 'https://api.open-meteo.com/v1/gfs' },        // GEFS uses GFS endpoint (ensemble)
+  eps: { endpoint: 'https://api.open-meteo.com/v1/ecmwf' },       // EPS uses ECMWF endpoint (ensemble)
 }
 
 export function buildModelUrl(model: ModelId, lat: number, lon: number): string {
