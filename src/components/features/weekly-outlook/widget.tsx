@@ -4,6 +4,7 @@ import { CalendarDays } from 'lucide-react'
 import type { WeeklyNarrative } from '../../../lib/forecast/types'
 import { OutlookModal } from './modal'
 import { useIsMobile } from '../../../hooks/use-mobile'
+import { WeatherIcon } from '@/components/ui/weather-icon'
 
 interface WeeklyOutlookWidgetProps {
   narrative: WeeklyNarrative | null
@@ -60,14 +61,14 @@ export function WeeklyOutlookWidget({ narrative, isLoading }: WeeklyOutlookWidge
             ) : narrative && today ? (
               <>
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{today.icon}</span>
+                  <WeatherIcon name={today.icon} size="xl" />
                   <div className="text-left">
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-semibold">{today.tempHigh}&deg;</span>
                       {nextChange && (
                         <>
                           <span className="text-muted-foreground">&rarr;</span>
-                          <span className="text-lg">{nextChange.icon}</span>
+                          <WeatherIcon name={nextChange.icon} size="lg" />
                           <span className="text-sm text-muted-foreground">{nextChange.dayOfWeek}</span>
                         </>
                       )}
@@ -130,14 +131,14 @@ export function WeeklyOutlookWidget({ narrative, isLoading }: WeeklyOutlookWidge
         ) : narrative && today ? (
           <>
             <div className="flex items-center gap-2">
-              <span className="text-2xl">{today.icon}</span>
+              <WeatherIcon name={today.icon} size="xl" />
               <span className="text-lg font-semibold">{today.tempHigh}&deg;C</span>
             </div>
             {nextChange && (
               <>
                 <span className="text-muted-foreground">&rarr;</span>
                 <div className="flex items-center gap-1">
-                  <span className="text-xl">{nextChange.icon}</span>
+                  <WeatherIcon name={nextChange.icon} size="lg" />
                   <span className="text-sm text-muted-foreground">{nextChange.dayOfWeek}</span>
                 </div>
               </>

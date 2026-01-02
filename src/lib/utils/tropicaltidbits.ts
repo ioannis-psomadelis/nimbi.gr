@@ -9,12 +9,12 @@ export const TT_MODEL_CODES: Record<ModelId, string | null> = {
   'gfs': 'gfs',
   'ecmwf-hres': 'ecmwf',
   'icon': 'icon',
-  'gem': 'cmc',
-  'ukmo': 'ukmo',
-  'arpege': null, // ARPEGE is not available on Tropical Tidbits
-  'ec-aifs': 'ecmwf-aifs',
-  'gefs': 'gefs',
-  'eps': 'eps',
+  'gem': 'gem',           // CMC/GEM uses 'gem' on TT
+  'ukmo': null,           // UKMO not available on TT - use Meteociel
+  'arpege': null,         // ARPEGE not available on TT - use Wetterzentrale
+  'ec-aifs': null,        // EC-AIFS - use Meteociel for better reliability
+  'gefs': null,           // GEFS - use Meteociel for better reliability
+  'eps': null,            // EPS ensemble uses different chart types - not supported
 }
 
 /**

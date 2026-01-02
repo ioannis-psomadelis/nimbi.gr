@@ -31,7 +31,7 @@ export const getParamTranslations = (id: ChartParamId) => {
     'jet': { label: 'paramJet', short: 'paramJetShort', desc: 'paramJetDesc', info: 'paramJetInfo', usage: 'paramJetUsage' },
     'z500': { label: 'paramZ500', short: 'paramZ500Short', desc: 'paramZ500Desc', info: 'paramZ500Info', usage: 'paramZ500Usage' },
     'cape': { label: 'paramCape', short: 'paramCapeShort', desc: 'paramCapeDesc', info: 'paramCapeInfo', usage: 'paramCapeUsage' },
-    'precip24': { label: 'paramPrecip', short: 'paramPrecipShort', desc: 'paramPrecipDesc', info: 'paramPrecipInfo', usage: 'paramPrecipUsage' },
+    'precip': { label: 'paramPrecip', short: 'paramPrecipShort', desc: 'paramPrecipDesc', info: 'paramPrecipInfo', usage: 'paramPrecipUsage' },
     'snow': { label: 'paramSnow', short: 'paramSnowShort', desc: 'paramSnowDesc', info: 'paramSnowInfo', usage: 'paramSnowUsage' },
     'pwat': { label: 'paramPwat', short: 'paramPwatShort', desc: 'paramPwatDesc', info: 'paramPwatInfo', usage: 'paramPwatUsage' },
     'ir': { label: 'paramIr', short: 'paramIrShort', desc: 'paramIrDesc', info: 'paramIrInfo', usage: 'paramIrUsage' },

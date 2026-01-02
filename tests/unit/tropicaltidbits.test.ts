@@ -26,14 +26,15 @@ describe('buildDirectTropicalTidbitsUrl', () => {
     expect(url).toBe('https://www.tropicaltidbits.com/analysis/models/icon/2025122800/icon_T850_eu_3.png')
   })
 
-  it('builds correct URL for GEM model (maps to cmc)', () => {
+  it('builds correct URL for GEM model', () => {
     const url = buildDirectTropicalTidbitsUrl('gem', '2025122800', 'wind', 18)
-    expect(url).toBe('https://www.tropicaltidbits.com/analysis/models/cmc/2025122800/cmc_mslp_wind_eu_4.png')
+    expect(url).toBe('https://www.tropicaltidbits.com/analysis/models/gem/2025122800/gem_mslp_wind_eu_4.png')
   })
 
-  it('builds correct URL for UKMO model', () => {
-    const url = buildDirectTropicalTidbitsUrl('ukmo', '2025122800', 'z500', 30)
-    expect(url).toBe('https://www.tropicaltidbits.com/analysis/models/ukmo/2025122800/ukmo_z500_vort_eu_6.png')
+  it('throws error for UKMO model (not on TT - use Meteociel)', () => {
+    expect(() => buildDirectTropicalTidbitsUrl('ukmo', '2025122800', 'z500', 30)).toThrow(
+      'Model ukmo not available on Tropical Tidbits'
+    )
   })
 
   it('throws error for unsupported model (arpege)', () => {
@@ -71,12 +72,28 @@ describe('TT_MODEL_CODES', () => {
     expect(TT_MODEL_CODES['ecmwf-hres']).toBe('ecmwf')
   })
 
-  it('maps gem to cmc', () => {
-    expect(TT_MODEL_CODES['gem']).toBe('cmc')
+  it('maps gem to gem', () => {
+    expect(TT_MODEL_CODES['gem']).toBe('gem')
   })
 
-  it('returns null for arpege (not on TT)', () => {
+  it('returns null for arpege (not on TT - use Wetterzentrale)', () => {
     expect(TT_MODEL_CODES['arpege']).toBeNull()
+  })
+
+  it('returns null for ukmo (not on TT - use Meteociel)', () => {
+    expect(TT_MODEL_CODES['ukmo']).toBeNull()
+  })
+
+  it('returns null for ec-aifs (use Meteociel for reliability)', () => {
+    expect(TT_MODEL_CODES['ec-aifs']).toBeNull()
+  })
+
+  it('returns null for gefs (use Meteociel for reliability)', () => {
+    expect(TT_MODEL_CODES['gefs']).toBeNull()
+  })
+
+  it('returns null for eps (ensemble - different chart types)', () => {
+    expect(TT_MODEL_CODES['eps']).toBeNull()
   })
 
   it('maps gfs to gfs', () => {
@@ -85,9 +102,5 @@ describe('TT_MODEL_CODES', () => {
 
   it('maps icon to icon', () => {
     expect(TT_MODEL_CODES['icon']).toBe('icon')
-  })
-
-  it('maps ukmo to ukmo', () => {
-    expect(TT_MODEL_CODES['ukmo']).toBe('ukmo')
   })
 })

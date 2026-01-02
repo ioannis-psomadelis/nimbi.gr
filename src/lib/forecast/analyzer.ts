@@ -11,6 +11,10 @@ import type {
   TemperatureTrend,
   ConfidenceLevel,
 } from './types'
+import {
+  type MeteoconName,
+  getMeteoconFromCondition,
+} from '@/components/ui/weather-icon'
 
 const PRIMARY_MODEL: ModelId = 'ecmwf-hres'
 const DAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -42,19 +46,16 @@ function getPressureTrend(pressureValues: number[]): PressureTrend {
 }
 
 /**
- * Get weather icon for condition
+ * Get Meteocon icon name for weather condition
+ * Supports both legacy conditions and WMO codes
  */
-export function getWeatherIcon(condition: WeatherCondition): string {
-  const icons: Record<WeatherCondition, string> = {
-    sunny: '\u2600\uFE0F',
-    partly_cloudy: '\u26C5',
-    cloudy: '\u2601\uFE0F',
-    rainy: '\uD83C\uDF27\uFE0F',
-    stormy: '\u26C8\uFE0F',
-    snowy: '\uD83C\uDF28\uFE0F',
-  }
-  return icons[condition]
+export function getWeatherIconName(
+  condition: WeatherCondition,
+  isNight: boolean = false
+): MeteoconName {
+  return getMeteoconFromCondition(condition, isNight)
 }
+
 
 /**
  * Extract daily forecast from hourly data

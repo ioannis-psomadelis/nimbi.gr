@@ -1,5 +1,6 @@
 import type { NarrativeDay } from '../../../lib/forecast/types'
 import { Droplets, Wind, Sun } from 'lucide-react'
+import { WeatherIcon } from '@/components/ui/weather-icon'
 
 interface DayCardProps {
   day: NarrativeDay
@@ -68,7 +69,7 @@ export function DayCard({ day, isToday, compact }: DayCardProps) {
         {/* Header row */}
         <div className="flex items-center justify-between gap-1 mb-1">
           <div className="flex items-center gap-1.5">
-            <span className="text-base">{day.icon}</span>
+            <WeatherIcon name={day.icon} size="lg" />
             <h3 className={`text-xs font-medium ${isToday ? 'text-primary' : ''}`}>
               {day.dayOfWeek}
             </h3>
@@ -127,7 +128,7 @@ export function DayCard({ day, isToday, compact }: DayCardProps) {
       {/* Main content */}
       <div className="flex items-start gap-3 p-3">
         {/* Icon */}
-        <div className="flex-shrink-0 text-2xl">{day.icon}</div>
+        <WeatherIcon name={day.icon} size="2xl" className="flex-shrink-0" />
 
         {/* Content */}
         <div className="flex-1 min-w-0">

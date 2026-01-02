@@ -7,6 +7,7 @@ import { DayCard } from './day-card'
 import { WeekChart } from './week-chart'
 import { ConfidenceIndicator } from './confidence-indicator'
 import { AirQualityCard } from '../air-quality'
+import { WeatherIcon } from '@/components/ui/weather-icon'
 
 interface OutlookModalProps {
   open: boolean
@@ -146,7 +147,9 @@ export function OutlookModal({ open, onOpenChange, narrative, fullScreen }: Outl
             {/* Summary + Chart */}
             <div className={`p-4 border-b border-border bg-muted/20 ${fullScreen ? '' : 'pb-2'}`}>
               <div className="flex items-start gap-3 mb-4">
-                <span className="text-3xl">{narrative.days[0]?.icon}</span>
+                {narrative.days[0] && (
+                  <WeatherIcon name={narrative.days[0].icon} size="2xl" />
+                )}
                 <div className="flex-1">
                   <p className="text-sm leading-relaxed font-medium text-foreground">{narrative.summary}</p>
                   <div className="mt-3">

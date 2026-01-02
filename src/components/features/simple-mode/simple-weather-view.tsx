@@ -4,7 +4,8 @@ import { memo, useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { WeatherResponse } from '../../../types/weather'
 import type { WeatherCondition } from '../../../lib/forecast/types'
-import { getWeatherIcon } from '../../../lib/forecast/analyzer'
+import { getWeatherIconName } from '../../../lib/forecast/analyzer'
+import { WeatherIcon, type MeteoconName } from '@/components/ui/weather-icon'
 
 interface SimpleWeatherViewProps {
   data: WeatherResponse
@@ -14,7 +15,7 @@ interface HourData {
   hour: number
   time: string
   temp: number
-  icon: string
+  icon: MeteoconName
   precipProb: number
   isCurrent: boolean
   isNight: boolean
@@ -26,7 +27,7 @@ interface DayData {
   dayName: string
   dateStr: string
   monthDay: string
-  icon: string
+  icon: MeteoconName
   highTemp: number
   lowTemp: number
   precipProb: number
@@ -110,14 +111,15 @@ function extractHoursForDay(data: WeatherResponse, dayIndex: number, isToday: bo
     const weatherCode = data.hourly.weather_code?.[idx] ?? undefined
     const condition = getCondition(cloud, precip, temp, weatherCode)
 
+    const isNight = isNightHour(hour)
     hours.push({
       hour,
       time: `${hour.toString().padStart(2, '0')}:00`,
       temp: Math.round(temp),
-      icon: getWeatherIcon(condition),
+      icon: getWeatherIconName(condition, isNight),
       precipProb: typeof precipProb === 'number' ? precipProb : 0,
       isCurrent: idx === currentGlobalIdx,
-      isNight: isNightHour(hour),
+      isNight,
       index: idx,
     })
   }
@@ -170,7 +172,7 @@ function extractDays(data: WeatherResponse, locale: string): DayData[] {
       dayName: date.toLocaleDateString(locale, { weekday: 'short' }),
       dateStr: date.toLocaleDateString(locale, { month: 'short', day: 'numeric' }),
       monthDay: `${date.getDate()}`,
-      icon: getWeatherIcon(condition),
+      icon: getWeatherIconName(condition, false), // Day icons for daily forecast
       highTemp: Math.round(Math.max(...temps)),
       lowTemp: Math.round(Math.min(...temps)),
       precipProb: maxPrecipProb,
@@ -251,7 +253,7 @@ const HourlyGrid = memo(function HourlyGrid({
             </span>
 
             {/* Icon */}
-            <span className="text-xl">{hour.icon}</span>
+            <WeatherIcon name={hour.icon} size="lg" />
 
             {/* Temperature */}
             <span className="text-sm font-semibold text-foreground tabular-nums">
@@ -315,7 +317,7 @@ const DaysForecast = memo(function DaysForecast({
               </div>
 
               {/* Weather icon */}
-              <span className="text-xl shrink-0">{day.icon}</span>
+              <WeatherIcon name={day.icon} size="lg" className="shrink-0" />
 
               {/* Precipitation */}
               <div className="w-10 shrink-0">

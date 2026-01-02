@@ -228,7 +228,7 @@ export function SearchModal({ variant = 'header' }: SearchModalProps) {
           <SheetContent
             side="bottom"
             showCloseButton={false}
-            className="h-[85vh] rounded-t-2xl p-0 gap-0 flex flex-col bg-card/98 backdrop-blur-xl border-border/40"
+            className="max-h-[85dvh] h-auto rounded-t-2xl p-0 gap-0 flex flex-col bg-card/98 backdrop-blur-xl border-border/40"
           >
 
             {/* Header with drag handle */}

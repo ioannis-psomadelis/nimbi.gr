@@ -1,5 +1,5 @@
 import type { WeeklyForecast, WeeklyNarrative, NarrativeDay, DayComparison } from './types'
-import { getWeatherIcon, getModelName, formatModelList } from './analyzer'
+import { getWeatherIconName, getModelName, formatModelList } from './analyzer'
 import { en } from './templates/en'
 import { el } from './templates/el'
 import type { TranslationKeys } from './templates/en'
@@ -164,7 +164,7 @@ export function generateWeeklyNarrative(
     dayOfWeek: getLocalizedDayName(day.date, day.dayOfWeek, lang),
     headline: generateDayHeadline(day, lang),
     details: generateDayDetails(day, lang),
-    icon: getWeatherIcon(day.primary.condition),
+    icon: getWeatherIconName(day.primary.condition),
     tempHigh: day.primary.tempHigh,
     tempLow: day.primary.tempLow,
     modelNote: generateModelNote(day, lang),

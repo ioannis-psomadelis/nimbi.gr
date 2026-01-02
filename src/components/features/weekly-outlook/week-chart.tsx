@@ -14,6 +14,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import type { NarrativeDay } from '../../../lib/forecast/types'
+import { WeatherIcon } from '@/components/ui/weather-icon'
 
 interface WeekChartProps {
   days: NarrativeDay[]
@@ -43,7 +44,7 @@ function ChartTooltip({ active, payload, label }: any) {
   return (
     <div className="bg-popover text-popover-foreground rounded-xl p-3 shadow-lg min-w-[140px] border border-border">
       <div className="flex items-center gap-2 mb-2 pb-2 border-b border-border">
-        <span className="text-xl">{data.icon}</span>
+        <WeatherIcon name={data.icon} size="lg" />
         <span className="font-semibold text-sm">{label}</span>
       </div>
       {/* Temperature */}
@@ -77,7 +78,7 @@ function ChartTooltip({ active, payload, label }: any) {
       {/* UV Index */}
       {data.uv > 0 && (
         <div className="text-xs flex justify-between items-center">
-          <span className="text-amber-400">☀️ UV</span>
+          <span className="text-amber-400 flex items-center gap-1"><WeatherIcon name="clear-day" size="xs" /> UV</span>
           <span className="font-medium text-amber-400">{data.uv}</span>
         </div>
       )}
@@ -138,9 +139,9 @@ export function WeekChart({ days }: WeekChartProps) {
             {payload.value}
           </text>
           {day && (
-            <text x={0} y={0} dy={34} textAnchor="middle" style={{ fontSize: '14px' }}>
-              {day.icon}
-            </text>
+            <foreignObject x={-12} y={20} width={24} height={24}>
+              <WeatherIcon name={day.icon} size="md" />
+            </foreignObject>
           )}
         </g>
       )

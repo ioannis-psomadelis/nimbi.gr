@@ -4,7 +4,8 @@ import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { WeatherResponse } from '../../../types/weather'
 import type { WeatherCondition } from '../../../lib/forecast/types'
-import { getWeatherIcon } from '../../../lib/forecast/analyzer'
+import { getWeatherIconName } from '../../../lib/forecast/analyzer'
+import { WeatherIcon, type MeteoconName } from '@/components/ui/weather-icon'
 
 interface SimpleHeroProps {
   data: WeatherResponse
@@ -144,15 +145,23 @@ function getSunTimes(data: WeatherResponse): { sunrise: string | null; sunset: s
 }
 
 /**
+ * Determine if a given hour is night time
+ */
+function isNightHour(hour: number): boolean {
+  return hour >= 20 || hour < 6
+}
+
+/**
  * Get next few hours forecast
  */
-function getHourlyPreview(data: WeatherResponse, currentIdx: number, count: number = 6) {
-  const hours = []
+function getHourlyPreview(data: WeatherResponse, currentIdx: number, count: number = 6): Array<{ hour: number; temp: number; icon: MeteoconName }> {
+  const hours: Array<{ hour: number; temp: number; icon: MeteoconName }> = []
   for (let i = 0; i < count; i++) {
     const idx = currentIdx + i + 1
     if (idx >= data.hourly.time.length) break
 
     const time = new Date(data.hourly.time[idx])
+    const hour = time.getHours()
     const temp = data.hourly.temperature_2m[idx] ?? 0
     const cloud = data.hourly.cloud_cover[idx] ?? 0
     const precip = data.hourly.precipitation[idx] ?? 0
@@ -160,9 +169,9 @@ function getHourlyPreview(data: WeatherResponse, currentIdx: number, count: numb
     const condition = getCurrentCondition(cloud, precip, temp, weatherCode)
 
     hours.push({
-      hour: time.getHours(),
+      hour,
       temp: Math.round(temp),
-      icon: getWeatherIcon(condition),
+      icon: getWeatherIconName(condition, isNightHour(hour)),
     })
   }
   return hours
@@ -208,11 +217,12 @@ export const SimpleHero = memo(function SimpleHero({ data }: SimpleHeroProps) {
     const precipSummary = getPrecipSummary(data, idx)
     const sunTimes = getSunTimes(data)
 
+    const currentHour = new Date(data.hourly.time[idx]).getHours()
     return {
       temperature: Math.round(temp),
       feelsLike,
       condition,
-      icon: getWeatherIcon(condition),
+      icon: getWeatherIconName(condition, isNightHour(currentHour)),
       windSpeed: Math.round(windSpeed),
       humidity: Math.round(estimatedHumidity),
       pressure: Math.round(pressure),
@@ -234,8 +244,8 @@ export const SimpleHero = memo(function SimpleHero({ data }: SimpleHeroProps) {
       {/* Main Weather Display */}
       <div className="flex items-center gap-6 md:gap-8 mb-6">
         {/* Weather Icon */}
-        <div className="text-6xl md:text-7xl" aria-hidden="true">
-          {currentWeather.icon}
+        <div aria-hidden="true">
+          <WeatherIcon name={currentWeather.icon} size="2xl" className="w-16 h-16 md:w-20 md:h-20" />
         </div>
 
         {/* Temperature + High/Low */}
@@ -265,7 +275,7 @@ export const SimpleHero = memo(function SimpleHero({ data }: SimpleHeroProps) {
             <span className="text-[10px] text-muted-foreground">
               {hour.hour.toString().padStart(2, '0')}:00
             </span>
-            <span className="text-lg">{hour.icon}</span>
+            <WeatherIcon name={hour.icon} size="lg" />
             <span className="text-xs font-medium text-foreground">{hour.temp}&deg;</span>
           </div>
         ))}

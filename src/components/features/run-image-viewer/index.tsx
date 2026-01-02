@@ -9,6 +9,7 @@ import {
   type ChartRegion,
   detectBestRegion,
 } from '../../../lib/utils/runs'
+import { getParamAvailability } from '../../../lib/utils/chart-params'
 import { TT_MODEL_CODES } from '../../../lib/utils/tropicaltidbits'
 import { MODEL_CONFIG } from '../../../types/models'
 import {
@@ -103,14 +104,17 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
   // Get model config
   const modelConfig = MODEL_CONFIG[model]
 
-  // Limit params for Wetterzentrale (only MSLP and 850hPa temp available)
-  const effectiveParam = useMemo(() => {
-    if (modelConfig.chartProvider === 'wetterzentrale') {
-      // Only mslp and t850 available for Wetterzentrale
-      return ['mslp', 't850'].includes(selectedParam) ? selectedParam : 'mslp'
-    }
-    return selectedParam
-  }, [selectedParam, modelConfig.chartProvider])
+  // Get param availability from centralized logic
+  const paramAvailability = useMemo(
+    () => getParamAvailability(model, scope),
+    [model, scope]
+  )
+
+  // Get effective param (with fallback for disabled params)
+  const effectiveParam = useMemo(
+    () => paramAvailability.getEffectiveParam(selectedParam),
+    [paramAvailability, selectedParam]
+  )
 
   // Build the target image URL - use effectiveForecastHour for immediate response
   const coords = { lat: latitude ?? 38, lon: longitude ?? 24 }
@@ -173,6 +177,29 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
     ? `${t(getParamTranslations(selectedParamConfig.id).label)} forecast`
     : 'Forecast chart'
 
+  // Show "charts not available" for models without chart support
+  if (modelConfig.chartProvider === 'none') {
+    return (
+      <Card className="overflow-hidden border-border shadow-sm py-0 gap-0">
+        <CardContent className="p-0">
+          <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div className="w-16 h-16 mb-4 rounded-full bg-muted/50 flex items-center justify-center">
+              <svg className="w-8 h-8 text-muted-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-foreground mb-1">
+              {t('chartsNotAvailable', 'Charts not available')}
+            </p>
+            <p className="text-xs text-muted-foreground max-w-[280px]">
+              {t('chartsNotAvailableDesc', 'Model run charts are not available for this model. Use the comparison chart above to view forecast data.')}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="overflow-hidden border-border shadow-sm py-0 gap-0">
       <CardContent className="p-0">
@@ -181,7 +208,7 @@ export function RunImageViewer({ runId, model, latitude, longitude, forecastHour
           selectedParam={selectedParam}
           onChange={setSelectedParam}
           availableParams={availableParams}
-          disabledParams={modelConfig.chartProvider === 'wetterzentrale' ? ['t2m', 'wind', 'jet', 'z500', 'cape', 'precip24', 'snow', 'pwat', 'ir'] : []}
+          disabledParams={paramAvailability.disabled}
         />
 
         {/* Region Selector - Europe/Regional toggle with country selection */}

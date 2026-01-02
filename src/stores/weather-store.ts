@@ -152,7 +152,8 @@ export const useForecastHour = () => useWeatherStore((s) => s.forecastHour)
 const ALL_MODELS = [...MODELS]
 const REGIONAL_MODELS = MODELS.filter((m) => MODEL_CONFIG[m].hasRegional)
 const ALL_PARAMS = [...CHART_PARAMS]
-const REGIONAL_PARAMS = CHART_PARAMS.filter((p) => p.meteocielMode !== null)
+// Regional params: include params with Meteociel OR Wetterzentrale support
+const REGIONAL_PARAMS = CHART_PARAMS.filter((p) => p.meteocielMode !== null || p.wetterzenParam !== null)
 
 // Derived selectors - return stable references to avoid infinite loops
 export const useAvailableModels = () =>

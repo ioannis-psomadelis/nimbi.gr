@@ -198,6 +198,23 @@ export const Route = createRootRoute({
         name: 'format-detection',
         content: 'telephone=no',
       },
+      // SEO essentials
+      {
+        name: 'description',
+        content: 'Compare weather forecasts from ECMWF, GFS, GEM & UKMO models. Multi-model weather observatory for Greece and Europe with hourly predictions and 7-day outlooks.',
+      },
+      {
+        name: 'keywords',
+        content: 'weather forecast, ECMWF, GFS, weather models, Greece weather, Europe weather, meteorology, forecast comparison',
+      },
+      {
+        name: 'author',
+        content: 'nimbi.gr',
+      },
+      {
+        name: 'robots',
+        content: 'index, follow',
+      },
       // Base OG tags (can be overridden by child routes)
       {
         property: 'og:type',
@@ -205,7 +222,27 @@ export const Route = createRootRoute({
       },
       {
         property: 'og:site_name',
-        content: 'nimbi.gr',
+        content: 'nimbi',
+      },
+      {
+        property: 'og:title',
+        content: 'nimbi - Multi-Model Weather Observatory',
+      },
+      {
+        property: 'og:description',
+        content: 'Compare weather forecasts from ECMWF, GFS, GEM & UKMO models for Greece and Europe.',
+      },
+      {
+        property: 'og:url',
+        content: 'https://nimbi.gr',
+      },
+      {
+        property: 'og:locale',
+        content: 'en_US',
+      },
+      {
+        property: 'og:locale:alternate',
+        content: 'el_GR',
       },
       {
         property: 'og:image',
@@ -220,12 +257,28 @@ export const Route = createRootRoute({
         content: '630',
       },
       {
+        property: 'og:image:alt',
+        content: 'nimbi - Multi-Model Weather Observatory',
+      },
+      {
         name: 'twitter:card',
         content: 'summary_large_image',
       },
       {
+        name: 'twitter:title',
+        content: 'nimbi - Multi-Model Weather Observatory',
+      },
+      {
+        name: 'twitter:description',
+        content: 'Compare weather forecasts from ECMWF, GFS, GEM & UKMO models.',
+      },
+      {
         name: 'twitter:image',
         content: 'https://nimbi.gr/og-image.png',
+      },
+      {
+        name: 'twitter:image:alt',
+        content: 'nimbi weather observatory',
       },
       {
         name: 'twitter:site',
@@ -238,30 +291,33 @@ export const Route = createRootRoute({
         href: appCss,
       },
       {
-        rel: 'shortcut icon',
-        href: '/favicon.ico',
-      },
-      {
         rel: 'icon',
-        type: 'image/svg+xml',
-        href: '/favicon.svg',
-      },
-      {
-        rel: 'icon',
-        type: 'image/png',
+        type: 'image/gif',
         sizes: '32x32',
-        href: '/favicon-32x32.png',
+        href: '/favicon-animated.gif',
       },
       {
         rel: 'icon',
-        type: 'image/png',
-        sizes: '16x16',
-        href: '/favicon-16x16.png',
+        type: 'image/x-icon',
+        sizes: '32x32',
+        href: '/favicon.ico',
       },
       {
         rel: 'apple-touch-icon',
         sizes: '180x180',
         href: '/apple-touch-icon.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '192x192',
+        href: '/icon-192x192.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '512x512',
+        href: '/icon-512x512.png',
       },
       {
         rel: 'manifest',

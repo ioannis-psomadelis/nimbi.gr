@@ -1,91 +1,360 @@
+#!/usr/bin/env node
+
+/**
+ * Generate animated favicon and OG images from weather icons
+ *
+ * Usage: node scripts/generate-favicons.mjs
+ *
+ * Outputs:
+ * - public/favicon.ico (32x32 static)
+ * - public/favicon-animated.gif (32x32 animated)
+ * - public/apple-touch-icon.png (180x180 static)
+ * - public/og-logo.gif (512x512 animated)
+ */
+
+import puppeteer from 'puppeteer'
+import GifEncoder from 'gif-encoder-2'
 import sharp from 'sharp'
+import { createWriteStream, readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const publicDir = join(__dirname, '..', 'public')
+const PROJECT_ROOT = join(__dirname, '..')
+const PUBLIC_DIR = join(PROJECT_ROOT, 'public')
+const ICONS_DIR = join(PUBLIC_DIR, 'weather-icons', 'fill')
 
-// Primary blue color (matches app's primary color)
-const primary = '#3b82f6'
-const whiteBg = '#ffffff'
-const darkBg = '#0f172a'
+// Weather sequence matching the AnimatedLogo component
+const WEATHER_SEQUENCE = [
+  'clear-day',
+  'partly-cloudy-day',
+  'cloudy',
+  'rain',
+  'thunderstorms',
+  'snow',
+]
 
-// Cloud path - same as used in the app (CLOUD_PATH from logo.tsx)
-const CLOUD_PATH = 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z'
+// Animation settings
+const FRAMES_PER_ICON = 15 // Frames to capture per icon (for internal animation)
+const FRAME_DELAY = 100 // Delay between GIF frames in ms (100ms = 10fps)
 
-// Favicon SVG with stroke-based cloud (matches app logo)
-const faviconSvg = (size) => {
-  const padding = size * 0.03
-  const rectSize = size - (padding * 2)
-  const borderWidth = Math.max(1, size * 0.06)
-  const radius = size * 0.19
-  const iconPadding = size * 0.125
-  const iconSize = size - (iconPadding * 2)
-  // Scale stroke width based on size for visibility
-  const strokeWidth = size <= 32 ? 2 : 1.5
-
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
-  <rect x="${padding}" y="${padding}" width="${rectSize}" height="${rectSize}" rx="${radius}" fill="${whiteBg}" stroke="${primary}" stroke-width="${borderWidth}"/>
-  <svg x="${iconPadding}" y="${iconPadding}" width="${iconSize}" height="${iconSize}" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="${strokeWidth}" stroke-linecap="round" stroke-linejoin="round">
-    <path d="${CLOUD_PATH}"/>
-  </svg>
-</svg>`
+// Output sizes
+const SIZES = {
+  favicon: 32,
+  appleTouchIcon: 180,
+  ogImage: 512,
 }
 
-// OG Image SVG (1200x630) with gradient background
-const ogImageSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f172a"/>
-      <stop offset="100%" style="stop-color:#1e293b"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <!-- Cloud icon (stroke-based, matching app) -->
-  <g transform="translate(456, 140)">
-    <svg width="288" height="288" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-      <path d="${CLOUD_PATH}"/>
-    </svg>
-  </g>
-  <!-- Text -->
-  <text x="600" y="500" text-anchor="middle" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="700">nimbi.gr</text>
-  <text x="600" y="560" text-anchor="middle" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="28">Weather Observatory</text>
-</svg>`
-
-async function generateFavicons() {
-  console.log('Generating favicons with primary blue color...')
-
-  // Generate favicon-16x16.png
-  await sharp(Buffer.from(faviconSvg(16)))
-    .png()
-    .toFile(join(publicDir, 'favicon-16x16.png'))
-  console.log('Created favicon-16x16.png')
-
-  // Generate favicon-32x32.png
-  await sharp(Buffer.from(faviconSvg(32)))
-    .png()
-    .toFile(join(publicDir, 'favicon-32x32.png'))
-  console.log('Created favicon-32x32.png')
-
-  // Generate apple-touch-icon.png (180x180)
-  await sharp(Buffer.from(faviconSvg(180)))
-    .png()
-    .toFile(join(publicDir, 'apple-touch-icon.png'))
-  console.log('Created apple-touch-icon.png')
-
-  // Generate OG image (1200x630)
-  await sharp(Buffer.from(ogImageSvg))
-    .png()
-    .toFile(join(publicDir, 'og-image.png'))
-  console.log('Created og-image.png')
-
-  // Generate favicon.ico from 32x32
-  await sharp(Buffer.from(faviconSvg(32)))
-    .png()
-    .toFile(join(publicDir, 'favicon.ico'))
-  console.log('Created favicon.ico')
-
-  console.log('Done!')
+function loadSvgContent(iconName) {
+  const svgPath = join(ICONS_DIR, `${iconName}.svg`)
+  if (!existsSync(svgPath)) {
+    throw new Error(`Icon not found: ${svgPath}`)
+  }
+  return readFileSync(svgPath, 'utf-8')
 }
 
-generateFavicons().catch(console.error)
+async function captureIconFrames(browser, iconName, size, numFrames) {
+  const svgContent = loadSvgContent(iconName)
+  const frames = []
+
+  const page = await browser.newPage()
+  await page.setViewport({ width: size, height: size, deviceScaleFactor: 2 })
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+          width: ${size}px;
+          height: ${size}px;
+          background: transparent;
+          overflow: hidden;
+        }
+        body {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        svg {
+          width: ${size}px;
+          height: ${size}px;
+        }
+      </style>
+    </head>
+    <body>${svgContent}</body>
+    </html>
+  `
+
+  await page.setContent(html, { waitUntil: 'networkidle0' })
+
+  // Wait for SVG animations to initialize
+  await new Promise(r => setTimeout(r, 100))
+
+  // Capture frames over time to get the animation
+  for (let i = 0; i < numFrames; i++) {
+    const buffer = await page.screenshot({
+      type: 'png',
+      omitBackground: true,
+    })
+    frames.push(buffer)
+    // Wait between frames to capture animation progress
+    await new Promise(r => setTimeout(r, 80))
+  }
+
+  await page.close()
+  return frames
+}
+
+async function createAnimatedGif(frames, size, outputPath, frameDelay = FRAME_DELAY) {
+  return new Promise(async (resolve, reject) => {
+    const encoder = new GifEncoder(size, size, 'neuquant', true)
+    const stream = createWriteStream(outputPath)
+
+    stream.on('finish', resolve)
+    stream.on('error', reject)
+
+    encoder.createReadStream().pipe(stream)
+    encoder.start()
+    encoder.setDelay(frameDelay)
+    encoder.setRepeat(0) // Loop forever
+    encoder.setTransparent(0x00000000)
+    encoder.setQuality(10) // Best quality
+
+    for (const framePng of frames) {
+      // Convert PNG to raw RGBA and resize
+      const { data } = await sharp(framePng)
+        .resize(size, size)
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true })
+
+      encoder.addFrame(data)
+    }
+
+    encoder.finish()
+  })
+}
+
+async function createStaticPng(frame, size, outputPath) {
+  await sharp(frame).resize(size, size).png().toFile(outputPath)
+}
+
+async function createIco(pngBuffer, outputPath) {
+  // Create 32x32 PNG
+  const png32 = await sharp(pngBuffer).resize(32, 32).png().toBuffer()
+
+  // Simple ICO format with PNG payload
+  const header = Buffer.alloc(6)
+  header.writeUInt16LE(0, 0) // Reserved
+  header.writeUInt16LE(1, 2) // ICO type
+  header.writeUInt16LE(1, 4) // Number of images
+
+  const entry = Buffer.alloc(16)
+  entry.writeUInt8(32, 0) // Width
+  entry.writeUInt8(32, 1) // Height
+  entry.writeUInt8(0, 2) // Color palette
+  entry.writeUInt8(0, 3) // Reserved
+  entry.writeUInt16LE(1, 4) // Color planes
+  entry.writeUInt16LE(32, 6) // Bits per pixel
+  entry.writeUInt32LE(png32.length, 8) // Size of image data
+  entry.writeUInt32LE(22, 12) // Offset to image data (6 + 16 = 22)
+
+  const ico = Buffer.concat([header, entry, png32])
+  writeFileSync(outputPath, ico)
+}
+
+async function createBrandedOgImage(browser, outputPath) {
+  const page = await browser.newPage()
+  await page.setViewport({ width: 1200, height: 630, deviceScaleFactor: 2 })
+
+  // Load weather icons for the collage
+  const icons = ['clear-day', 'partly-cloudy-day', 'rain', 'thunderstorms', 'snow']
+  const iconSvgs = icons.map(name => loadSvgContent(name))
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+          width: 1200px;
+          height: 630px;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        body {
+          background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
+        }
+        .bg-pattern {
+          position: absolute;
+          inset: 0;
+          opacity: 0.1;
+          background-image: radial-gradient(circle at 20% 80%, white 1px, transparent 1px),
+                            radial-gradient(circle at 80% 20%, white 1px, transparent 1px),
+                            radial-gradient(circle at 40% 40%, white 1px, transparent 1px);
+          background-size: 60px 60px;
+        }
+        .content {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 24px;
+        }
+        .icons-row {
+          display: flex;
+          gap: 20px;
+          align-items: center;
+        }
+        .icon {
+          width: 100px;
+          height: 100px;
+          opacity: 0.9;
+        }
+        .icon.main {
+          width: 160px;
+          height: 160px;
+          opacity: 1;
+        }
+        .icon svg {
+          width: 100%;
+          height: 100%;
+        }
+        .brand {
+          text-align: center;
+        }
+        .brand h1 {
+          font-size: 72px;
+          font-weight: 700;
+          color: white;
+          letter-spacing: -2px;
+          text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .brand p {
+          font-size: 28px;
+          color: rgba(255,255,255,0.9);
+          font-weight: 400;
+          margin-top: 8px;
+        }
+        .url {
+          position: absolute;
+          bottom: 40px;
+          font-size: 22px;
+          color: rgba(255,255,255,0.7);
+          font-weight: 600;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="bg-pattern"></div>
+      <div class="content">
+        <div class="icons-row">
+          <div class="icon">${iconSvgs[0]}</div>
+          <div class="icon">${iconSvgs[1]}</div>
+          <div class="icon main">${iconSvgs[2]}</div>
+          <div class="icon">${iconSvgs[3]}</div>
+          <div class="icon">${iconSvgs[4]}</div>
+        </div>
+        <div class="brand">
+          <h1>nimbi</h1>
+          <p>Multi-Model Weather Observatory</p>
+        </div>
+      </div>
+      <div class="url">nimbi.gr</div>
+    </body>
+    </html>
+  `
+
+  await page.setContent(html, { waitUntil: 'networkidle0' })
+  await new Promise(r => setTimeout(r, 500)) // Wait for fonts and animations
+
+  const buffer = await page.screenshot({ type: 'png' })
+  await page.close()
+
+  await sharp(buffer).resize(1200, 630).png({ quality: 90 }).toFile(outputPath)
+}
+
+async function main() {
+  console.log('🎨 Generating favicon and OG images...\n')
+
+  // Ensure output directory exists
+  if (!existsSync(PUBLIC_DIR)) {
+    mkdirSync(PUBLIC_DIR, { recursive: true })
+  }
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  })
+
+  try {
+    // Collect all frames for the complete animation cycle
+    console.log('📸 Capturing frames for each weather state...')
+    const allFrames = {
+      [SIZES.favicon]: [],
+      [SIZES.appleTouchIcon]: [],
+      [SIZES.ogImage]: [],
+    }
+
+    for (const iconName of WEATHER_SEQUENCE) {
+      console.log(`  - ${iconName}`)
+
+      for (const size of Object.values(SIZES)) {
+        const frames = await captureIconFrames(browser, iconName, size, FRAMES_PER_ICON)
+        allFrames[size].push(...frames)
+      }
+    }
+
+    // Generate outputs
+    console.log('\n✨ Generating output files...')
+
+    // Favicon (static .ico)
+    console.log('  - favicon.ico (32x32 static)')
+    await createIco(allFrames[SIZES.favicon][0], join(PUBLIC_DIR, 'favicon.ico'))
+
+    // Animated favicon GIF
+    console.log('  - favicon-animated.gif (32x32 animated)')
+    await createAnimatedGif(
+      allFrames[SIZES.favicon],
+      SIZES.favicon,
+      join(PUBLIC_DIR, 'favicon-animated.gif'),
+      FRAME_DELAY
+    )
+
+    // Apple touch icon (static)
+    console.log('  - apple-touch-icon.png (180x180 static)')
+    await createStaticPng(
+      allFrames[SIZES.appleTouchIcon][0],
+      SIZES.appleTouchIcon,
+      join(PUBLIC_DIR, 'apple-touch-icon.png')
+    )
+
+    // Branded OG image
+    console.log('  - og-image.png (1200x630 branded)')
+    await createBrandedOgImage(browser, join(PUBLIC_DIR, 'og-image.png'))
+
+    console.log('\n✅ Done! Generated files in public/')
+    console.log('\nGenerated:')
+    console.log('  • favicon.ico - Static fallback')
+    console.log('  • favicon-animated.gif - Animated for modern browsers')
+    console.log('  • apple-touch-icon.png - iOS home screen icon')
+    console.log('  • og-image.png - Social media sharing (branded)')
+  } finally {
+    await browser.close()
+  }
+}
+
+main().catch((error) => {
+  console.error('Error:', error)
+  process.exit(1)
+})

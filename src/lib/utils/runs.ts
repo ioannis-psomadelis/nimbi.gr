@@ -170,15 +170,16 @@ export function detectBestRegion(lat: number, lon: number): ChartRegion {
 // Chart scopes - Europe-wide or Regional zoom
 export const CHART_SCOPES = ['europe', 'regional'] as const
 
-// Meteociel chart parameters with detailed info for tooltips/modals
-// Core params are mapped to both Tropical Tidbits and Meteociel
-// TT-only params have meteocielMode: null
+// Chart parameters with provider-specific mappings
+// - meteocielMode: Meteociel URL mode parameter (null = not available)
+// - wetterzenParam: Wetterzentrale param number (null = not available)
 export const CHART_PARAMS = [
-  // Core (mapped to both TT and Meteociel)
+  // Core params (available on TT, Meteociel, and Wetterzentrale)
   {
     id: 'mslp',
     ttCode: 'mslp_pcpn_frzn',
     meteocielMode: 0,
+    wetterzenParam: 1,  // Z500 (synoptic overview)
     label: 'Pressure & Precip',
     shortLabel: 'MSLP',
     description: 'Mean Sea Level Pressure & Precipitation (Rain/Frozen)',
@@ -188,6 +189,7 @@ export const CHART_PARAMS = [
     id: 't2m',
     ttCode: 'T2m',
     meteocielMode: 9,
+    wetterzenParam: 5,  // 2m Temperature
     label: 'Temp 2m',
     shortLabel: 'T2m',
     description: 'Temperature at 2 meters',
@@ -197,6 +199,7 @@ export const CHART_PARAMS = [
     id: 't850',
     ttCode: 'T850',
     meteocielMode: 1,
+    wetterzenParam: 2,  // 850 hPa Temperature
     label: 'Temp 850',
     shortLabel: 'T850',
     description: 'Temperature at 850hPa (~1500m)',
@@ -206,6 +209,7 @@ export const CHART_PARAMS = [
     id: 'wind',
     ttCode: 'mslp_wind',
     meteocielMode: 14,
+    wetterzenParam: 3,  // 850 hPa Wind/Streamlines
     label: 'Wind',
     shortLabel: 'Wind',
     description: 'MSLP & 10m Wind',
@@ -215,52 +219,59 @@ export const CHART_PARAMS = [
     id: 'jet',
     ttCode: 'uv250',
     meteocielMode: 5,
+    wetterzenParam: 1,  // Z500 (fallback, no jet stream on WZ)
     label: 'Jet Stream',
     shortLabel: 'Jet',
     description: '250mb Wind (Jet Stream)',
     info: 'The jet stream at high altitude.',
   },
-  // TT-only params (meteocielMode: null)
+  // Params with Wetterzentrale regional support
   {
-    id: 'z500',
-    ttCode: 'z500_vort',
+    id: 'precip',
+    ttCode: 'apcpn24',
     meteocielMode: null,
-    label: '500mb Heights',
-    shortLabel: 'Z500',
-    description: '500mb Height & Vorticity',
-    info: 'Mid-level atmospheric pattern.',
+    wetterzenParam: 4,  // Precipitation
+    label: 'Precipitation',
+    shortLabel: 'Precip',
+    description: 'Accumulated Precipitation',
+    info: 'Total precipitation forecast.',
   },
   {
     id: 'cape',
     ttCode: 'cape',
     meteocielMode: null,
+    wetterzenParam: 11, // CAPE/Lifted Index
     label: 'CAPE',
     shortLabel: 'CAPE',
     description: 'Surface-Based CAPE (Thunderstorm potential)',
     info: 'Indicates thunderstorm potential.',
   },
   {
-    id: 'precip24',
-    ttCode: 'apcpn24',
-    meteocielMode: null,
-    label: 'Precip 24h',
-    shortLabel: 'Precip',
-    description: '24-hour Accumulated Precipitation',
-    info: 'Total precipitation over 24 hours.',
-  },
-  {
     id: 'snow',
     ttCode: 'asnow',
     meteocielMode: null,
+    wetterzenParam: 25, // Snow depth
     label: 'Snowfall',
     shortLabel: 'Snow',
     description: 'Total Snowfall (10:1 SLR)',
     info: 'Accumulated snowfall.',
   },
+  // TT-only params (no regional support)
+  {
+    id: 'z500',
+    ttCode: 'z500_vort',
+    meteocielMode: null,
+    wetterzenParam: null,
+    label: '500mb Heights',
+    shortLabel: 'Z500',
+    description: '500mb Height & Vorticity',
+    info: 'Mid-level atmospheric pattern.',
+  },
   {
     id: 'pwat',
     ttCode: 'mslp_pwat',
     meteocielMode: null,
+    wetterzenParam: null,
     label: 'PWAT',
     shortLabel: 'PWAT',
     description: 'Precipitable Water',
@@ -270,6 +281,7 @@ export const CHART_PARAMS = [
     id: 'ir',
     ttCode: 'ir',
     meteocielMode: null,
+    wetterzenParam: null,
     label: 'Satellite',
     shortLabel: 'IR',
     description: 'Simulated IR Satellite',
@@ -279,28 +291,25 @@ export const CHART_PARAMS = [
 
 export type ChartParamId = (typeof CHART_PARAMS)[number]['id']
 
-export function getAvailableParams(scope: (typeof CHART_SCOPES)[number]) {
+export function getAvailableParams(scope: (typeof CHART_SCOPES)[number], chartProvider?: string) {
   if (scope === 'europe') {
     return CHART_PARAMS
   }
+  // Regional: include params available on Meteociel OR Wetterzentrale
+  if (chartProvider === 'wetterzentrale') {
+    return CHART_PARAMS.filter(p => p.meteocielMode !== null || p.wetterzenParam !== null)
+  }
+  // Meteociel regional: only params with meteocielMode
   return CHART_PARAMS.filter(p => p.meteocielMode !== null)
 }
 
 // Model-specific URL patterns from Meteociel
 // GFS: https://modeles16.meteociel.fr/modeles/gfs/runs/{runId}/gfs-{mode}-{hour}.png
-// ECMWF: https://www.meteociel.fr/modeles/ecmwf/runs/{runId}/ECM1-{hour}.GIF
-// GEM: https://modeles16.meteociel.fr/modeles/gem/run/gem-{mode}-{hour}.png
-// UKMO: https://www.meteociel.fr/ukmo/runs/{runId}/UW6-{hour}.GIF
-
-// UKMO mode mappings
-const UKMO_MODE_MAP: Record<number, string> = {
-  0: 'UW6',   // Pressure/500hPa
-  9: 'UW0',   // Temp 2m
-  1: 'UW2',   // Temp 850
-  2: 'UW3',   // Precip
-  14: 'UW4',  // Wind
-  5: 'UW5',   // Jet stream
-}
+// ECMWF: https://modeles3.meteociel.fr/modeles/ecmwf/runs/{runId}/ecmwf{suffix}-{mode}-{hour}.png
+// GEM: https://modeles16.meteociel.fr/modeles/gem/archives/{runId}/gem-{mode}-{hour}.png
+// UKMO: https://www.meteociel.fr/ukmo/runs/{runId}/UW{hour}-21.GIF (only mode 21 available)
+// EC-AIFS: https://modeles3.meteociel.fr/modeles/ecmwfaifsv1/runs/{runId}/ecmwf-{mode}-{hour}.png
+// GEFS: https://modeles16.meteociel.fr/modeles/gens/runs/{runId}/gens-{mode}-1-{hour}.png (member=1)
 
 // Models that only run at 00z and 12z (not 06z and 18z)
 // Derived from MODEL_RUN_TIMES
@@ -333,7 +342,7 @@ function getModelRunId(model: ModelId, runId: string): string {
 // Derive ChartScope type from CHART_SCOPES constant
 export type ChartScope = (typeof CHART_SCOPES)[number]
 
-// Build Meteociel chart URL for supported models (ECMWF, GFS, GEM, UKMO)
+// Build Meteociel chart URL for supported models (ECMWF, GFS, GEM, UKMO, EC-AIFS, GEFS)
 export function buildMeteocielUrl(
   model: ModelId,
   runId: string,
@@ -356,15 +365,31 @@ export function buildMeteocielUrl(
       return `https://modeles3.meteociel.fr/modeles/ecmwf/runs/${hresRunId}/ecmwf${suffix}-${mode}-${forecastHour}.png`
     }
 
-    case 'gem':
-      // GEM only supports Europe
-      return `https://modeles16.meteociel.fr/modeles/gem/run/gem-${mode}-${forecastHour}.png`
+    case 'gem': {
+      // GEM uses archives path with run ID
+      // URL: https://modeles16.meteociel.fr/modeles/gem/archives/{runId}/gem-{mode}-{hour}.png
+      const gemRunId = getModelRunId('gem', runId)
+      return `https://modeles16.meteociel.fr/modeles/gem/archives/${gemRunId}/gem-${mode}-${forecastHour}.png`
+    }
 
     case 'ukmo': {
-      // UKMO only supports Europe
+      // UKMO only has mode 21 available on Meteociel (MSLP + precipitation)
+      // URL: https://www.meteociel.fr/ukmo/runs/{runId}/UW{hour}-21.GIF
       const ukmoRunId = getModelRunId('ukmo', runId)
-      const ukmoCode = UKMO_MODE_MAP[mode] || 'UW6'
-      return `https://www.meteociel.fr/ukmo/runs/${ukmoRunId}/${ukmoCode}-${forecastHour}.GIF`
+      return `https://www.meteociel.fr/ukmo/runs/${ukmoRunId}/UW${forecastHour}-21.GIF`
+    }
+
+    case 'ec-aifs': {
+      // EC-AIFS uses similar pattern to ECMWF but different directory
+      // URL: https://modeles3.meteociel.fr/modeles/ecmwfaifsv1/runs/{runId}/ecmwf-{mode}-{hour}.png
+      const aifsRunId = getModelRunId('ec-aifs', runId)
+      return `https://modeles3.meteociel.fr/modeles/ecmwfaifsv1/runs/${aifsRunId}/ecmwf-${mode}-${forecastHour}.png`
+    }
+
+    case 'gefs': {
+      // GEFS ensemble - use member 1 as representative view
+      // URL: https://modeles16.meteociel.fr/modeles/gens/runs/{runId}/gens-{mode}-1-{hour}.png
+      return `https://modeles16.meteociel.fr/modeles/gens/runs/${runId}/gens-${mode}-1-${forecastHour}.png`
     }
 
     default:
@@ -376,24 +401,13 @@ export function buildMeteocielUrl(
 import {
   buildWetterzenUrl,
   detectWetterzenRegion,
-  WETTERZENTRALE_PARAMS,
   type WetterzenRegionCode,
   type WetterzenParamCode,
+  type WetterzenModel,
 } from './wetterzentrale'
 
 // Import Tropical Tidbits utilities
 import { buildTropicalTidbitsUrl, TT_MODEL_CODES } from './tropicaltidbits'
-
-// Map Meteociel mode to Wetterzentrale param
-function modeToWetterzenParam(mode: number): WetterzenParamCode {
-  // Mode 0 = MSLP (Pressure), Mode 1 = 850hPa Temp
-  // Wetterzentrale: 1 = MSLP, 2 = 850 hPa Temp
-  switch (mode) {
-    case 0: return WETTERZENTRALE_PARAMS.MSLP
-    case 1: return WETTERZENTRALE_PARAMS.TEMP_850
-    default: return WETTERZENTRALE_PARAMS.MSLP
-  }
-}
 
 // Build chart URL for any model based on scope
 export function buildChartUrl(
@@ -408,8 +422,9 @@ export function buildChartUrl(
   const config = MODEL_CONFIG[model]
   const paramConfig = CHART_PARAMS.find(p => p.id === param)
 
-  // TT-only params force Europe scope
-  const effectiveScope = paramConfig?.meteocielMode === null ? 'europe' : scope
+  // Determine if param is available for regional scope
+  const hasRegionalSupport = paramConfig?.meteocielMode !== null || paramConfig?.wetterzenParam !== null
+  const effectiveScope = hasRegionalSupport ? scope : 'europe'
 
   // Select provider based on scope
   if (effectiveScope === 'europe') {
@@ -417,22 +432,22 @@ export function buildChartUrl(
     if (TT_MODEL_CODES[model]) {
       return buildTropicalTidbitsUrl(model, runId, param, forecastHour)
     }
-    // Fallback for models not on TT (e.g., arpege)
+    // Fallback for models not on TT (e.g., arpege, ukmo)
     if (config.chartProvider === 'wetterzentrale') {
       const runHour = parseInt(runId.slice(-2), 10)
       const wetterzenRegion = 'EU' as WetterzenRegionCode
-      const wetterzenParam = modeToWetterzenParam(paramConfig?.meteocielMode ?? 0)
-      return buildWetterzenUrl(model as 'icon' | 'arpege', wetterzenRegion, runHour, forecastHour, wetterzenParam)
+      const wetterzenParam = (paramConfig?.wetterzenParam ?? 1) as WetterzenParamCode
+      return buildWetterzenUrl(model as WetterzenModel, wetterzenRegion, runHour, forecastHour, wetterzenParam)
     }
     return buildMeteocielUrl(model, runId, paramConfig?.meteocielMode ?? 0, forecastHour, 'europe')
   }
 
-  // Regional scope - use legacy providers
+  // Regional scope - use Wetterzentrale for supported models
   if (config.chartProvider === 'wetterzentrale') {
     const runHour = parseInt(runId.slice(-2), 10)
     const wetterzenRegion = detectWetterzenRegion(coords.lat, coords.lon)
-    const wetterzenParam = modeToWetterzenParam(paramConfig?.meteocielMode ?? 0)
-    return buildWetterzenUrl(model as 'icon' | 'arpege', wetterzenRegion, runHour, forecastHour, wetterzenParam)
+    const wetterzenParam = (paramConfig?.wetterzenParam ?? 1) as WetterzenParamCode
+    return buildWetterzenUrl(model as WetterzenModel, wetterzenRegion, runHour, forecastHour, wetterzenParam)
   }
 
   const region = meteocielRegion ?? detectBestRegion(coords.lat, coords.lon)

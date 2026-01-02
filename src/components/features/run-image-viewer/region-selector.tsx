@@ -52,9 +52,9 @@ export const RegionSelector = memo(function RegionSelector({
         <button
           onClick={() => onScopeChange('europe')}
           className={`
-            flex items-center gap-1.5 min-w-[5.5rem] px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0
+            flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0
             ${scope === 'europe'
-              ? 'bg-primary/10 text-primary ring-2 ring-primary/30 ring-offset-1 ring-offset-background'
+              ? 'bg-primary/10 text-primary ring-2 ring-primary/30'
               : 'bg-muted text-muted-foreground hover:bg-secondary'
             }
           `}
@@ -63,24 +63,22 @@ export const RegionSelector = memo(function RegionSelector({
           <span>{t('europe')}</span>
         </button>
 
-        {/* Regional button - disabled for models without regional */}
-        <button
-          onClick={() => hasRegional && onScopeChange('regional')}
-          disabled={!hasRegional}
-          className={`
-            flex items-center gap-1.5 min-w-[5.5rem] px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0
-            ${!hasRegional
-              ? 'bg-muted/50 text-muted-foreground/40 cursor-not-allowed'
-              : scope === 'regional'
-                ? 'bg-primary/10 text-primary ring-2 ring-primary/30 ring-offset-1 ring-offset-background'
+        {/* Regional button - only shown for models with regional support */}
+        {hasRegional && (
+          <button
+            onClick={() => onScopeChange('regional')}
+            className={`
+              flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0
+              ${scope === 'regional'
+                ? 'bg-primary/10 text-primary ring-2 ring-primary/30'
                 : 'bg-muted text-muted-foreground hover:bg-secondary'
-            }
-          `}
-          title={!hasRegional ? t('regionalNotAvailable') : undefined}
-        >
-          <MapPin className="w-3 h-3" />
-          <span>{scope === 'regional' ? getRegionalName() : t('regional')}</span>
-        </button>
+              }
+            `}
+          >
+            <MapPin className="w-3 h-3" />
+            <span>{scope === 'regional' ? getRegionalName() : t('regional')}</span>
+          </button>
+        )}
 
         {/* Country-specific regions for ECMWF when in regional mode */}
         {model === 'ecmwf-hres' && scope === 'regional' && availableRegions.length > 1 && (
@@ -91,9 +89,9 @@ export const RegionSelector = memo(function RegionSelector({
                 key={region}
                 onClick={() => onRegionChange(region)}
                 className={`
-                  min-w-[5.5rem] px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0
+                  px-3 py-1.5 rounded-lg text-xs font-medium transition-all shrink-0
                   ${selectedRegion === region
-                    ? 'bg-primary/10 text-primary ring-2 ring-primary/30 ring-offset-1 ring-offset-background'
+                    ? 'bg-primary/10 text-primary ring-2 ring-primary/30'
                     : 'bg-muted text-muted-foreground hover:bg-secondary'
                   }
                 `}

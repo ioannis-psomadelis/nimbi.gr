@@ -1,6 +1,7 @@
-// Wetterzentrale chart integration for ICON and ARPEGE models
+// Wetterzentrale chart integration for multiple models
+// Supports: GFS, GEM, UKMO, ICON, ARPEGE with regional charts
 
-export type WetterzenModel = 'icon' | 'arpege'
+export type WetterzenModel = 'gfs' | 'gem' | 'ukmo' | 'icon' | 'arpege'
 
 // Region codes for Wetterzentrale
 export type WetterzenRegionCode = 'EU' | 'ME' | 'IT' | 'FR' | 'SP' | 'UK' | 'DK' | 'SC' | 'NL' | 'TR'
@@ -26,15 +27,25 @@ export const WETTERZENTRALE_REGIONS: Record<WetterzenRegionCode, WetterzenRegion
 }
 
 // Wetterzentrale chart parameters
+// Based on: https://www.wetterzentrale.de/de/topkarten.php
 export const WETTERZENTRALE_PARAMS = {
-  MSLP: 1,      // Mean Sea Level Pressure
-  TEMP_850: 2,  // 850 hPa Temperature
+  Z500: 1,       // 500 hPa Geopotential Height (synoptic overview)
+  TEMP_850: 2,   // 850 hPa Temperature
+  WIND_850: 3,   // 850 hPa Streamlines/Wind
+  PRECIP: 4,     // Precipitation
+  TEMP_2M: 5,    // 2m Temperature
+  CAPE: 11,      // CAPE/Lifted Index
+  SNOW: 25,      // Total Snow Depth
 } as const
 
 export type WetterzenParamCode = typeof WETTERZENTRALE_PARAMS[keyof typeof WETTERZENTRALE_PARAMS]
 
-// Model URL prefixes
+// Model URL prefixes for Wetterzentrale
+// URL pattern: https://www.wetterzentrale.de/maps/{PREFIX}OP{REGION}{RUN}_{HOUR}_{PARAM}.png
 const MODEL_PREFIX: Record<WetterzenModel, string> = {
+  gfs: 'GFS',
+  gem: 'GEM',
+  ukmo: 'UKM',
   icon: 'ICO',
   arpege: 'ARP',
 }

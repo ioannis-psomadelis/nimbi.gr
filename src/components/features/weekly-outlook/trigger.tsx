@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { WeeklyNarrative } from '../../../lib/forecast/types'
 import { OutlookModal } from './modal'
 import { useIsMobile } from '../../../hooks/use-mobile'
+import { WeatherIcon } from '@/components/ui/weather-icon'
 
 interface OutlookTriggerProps {
   narrative: WeeklyNarrative | null
@@ -62,7 +63,7 @@ export function OutlookTrigger({ narrative, variant = 'default', className = '' 
             ${className}
           `}
         >
-          <span>{today.icon}</span>
+          <WeatherIcon name={today.icon} size="lg" />
           <span className="font-medium">{today.tempHigh}&deg;</span>
           <CalendarDays className="h-4 w-4 text-muted-foreground" />
         </button>
@@ -100,14 +101,14 @@ export function OutlookTrigger({ narrative, variant = 'default', className = '' 
             <CalendarDays className="h-4 w-4 text-primary/60 group-hover:text-primary transition-colors" />
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{today.icon}</span>
+            <WeatherIcon name={today.icon} size="xl" />
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-semibold">{today.tempHigh}&deg;</span>
                 {nextChange && (
                   <>
                     <span className="text-muted-foreground text-sm">&rarr;</span>
-                    <span>{nextChange.icon}</span>
+                    <WeatherIcon name={nextChange.icon} size="lg" />
                     <span className="text-xs text-muted-foreground">{nextChange.dayOfWeek}</span>
                   </>
                 )}
@@ -140,7 +141,7 @@ export function OutlookTrigger({ narrative, variant = 'default', className = '' 
           ${className}
         `}
       >
-        <span className="text-xl">{today.icon}</span>
+        <WeatherIcon name={today.icon} size="xl" />
         <div className="text-left">
           <div className="text-sm font-medium">{today.tempHigh}&deg;C</div>
           <div className="text-xs text-muted-foreground">{t('weeklyOutlook', 'Weekly Outlook')}</div>

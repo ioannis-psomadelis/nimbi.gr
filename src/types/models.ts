@@ -12,7 +12,7 @@ export const MODELS = [
 
 export type ModelId = (typeof MODELS)[number]
 
-export type ChartProvider = 'meteociel' | 'wetterzentrale' | 'tropicaltidbits'
+export type ChartProvider = 'meteociel' | 'wetterzentrale' | 'tropicaltidbits' | 'none'
 export type DataProvider = 'open-meteo'
 
 export const MODEL_GROUPS = {
@@ -79,8 +79,8 @@ export const MODEL_CONFIG: Record<ModelId, ModelConfig> = {
     name: 'GFS',
     color: '#3b82f6',
     description: 'GFS - US Global Forecast System (NOAA/NCEP)',
-    hasRegional: false,
-    chartProvider: 'meteociel',
+    hasRegional: true,
+    chartProvider: 'wetterzentrale',
     dataProvider: 'open-meteo',
     resolution: '0.25° (~25km)',
     updateTimes: '00z, 06z, 12z, 18z',
@@ -90,8 +90,8 @@ export const MODEL_CONFIG: Record<ModelId, ModelConfig> = {
     name: 'GEM',
     color: '#22c55e',
     description: 'GEM - Canadian Global Environmental Multiscale Model',
-    hasRegional: false,
-    chartProvider: 'meteociel',
+    hasRegional: true,
+    chartProvider: 'wetterzentrale',
     dataProvider: 'open-meteo',
     resolution: '0.25° (~25km)',
     updateTimes: '00z, 12z',
@@ -102,7 +102,7 @@ export const MODEL_CONFIG: Record<ModelId, ModelConfig> = {
     color: '#f59e0b',
     description: 'UKMO - UK Met Office Unified Model',
     hasRegional: false,
-    chartProvider: 'meteociel',
+    chartProvider: 'meteociel',  // Meteociel mode 21 only (limited params)
     dataProvider: 'open-meteo',
     resolution: '0.1° (~10km)',
     updateTimes: '00z, 12z',
@@ -113,7 +113,7 @@ export const MODEL_CONFIG: Record<ModelId, ModelConfig> = {
     color: '#e11d48',
     description: 'ECMWF Artificial Intelligence Forecast System',
     hasRegional: false,
-    chartProvider: 'tropicaltidbits',
+    chartProvider: 'meteociel',  // Meteociel ecmwfaifsv1
     dataProvider: 'open-meteo',
     resolution: '0.25° (~25km)',
     updateTimes: '00z, 12z',
@@ -124,7 +124,7 @@ export const MODEL_CONFIG: Record<ModelId, ModelConfig> = {
     color: '#7c3aed',
     description: 'Global Ensemble Forecast System (31 members)',
     hasRegional: false,
-    chartProvider: 'tropicaltidbits',
+    chartProvider: 'meteociel',  // Meteociel gens (member 1)
     dataProvider: 'open-meteo',
     resolution: '0.5° (~50km)',
     updateTimes: '00z, 06z, 12z, 18z',
@@ -135,7 +135,7 @@ export const MODEL_CONFIG: Record<ModelId, ModelConfig> = {
     color: '#db2777',
     description: 'ECMWF Ensemble Prediction System (51 members)',
     hasRegional: false,
-    chartProvider: 'tropicaltidbits',
+    chartProvider: 'none',  // Ensemble model - different chart types - data only
     dataProvider: 'open-meteo',
     resolution: '0.4° (~40km)',
     updateTimes: '00z, 12z',

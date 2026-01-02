@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Search } from 'lucide-react'
 import { createLocationFromCoords } from '../lib/server/locations'
-import { CLOUD_PATH } from '../components/ui/logo'
+import { AnimatedLogo } from '../components/ui/animated-logo'
 import { trackEvent } from '../lib/posthog'
 import { useLocalePath } from '../lib/route-context'
 
@@ -177,11 +177,7 @@ export function HomePage({ locations }: HomePageProps) {
       {/* Minimal Header */}
       <header className="flex items-center justify-between px-6 sm:px-8 py-5 animate-fade-in">
         <Link to={homePath} className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-white/90 dark:bg-primary/15 flex items-center justify-center border border-white/50 dark:border-primary/20 group-hover:bg-white dark:group-hover:bg-primary/25 transition-colors shadow-md dark:shadow-none">
-            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CLOUD_PATH} />
-            </svg>
-          </div>
+          <AnimatedLogo size="lg" />
           <span className="font-semibold text-white dark:text-foreground/90 text-sm tracking-wide drop-shadow-md dark:drop-shadow-none">nimbi</span>
         </Link>
 
@@ -197,11 +193,7 @@ export function HomePage({ locations }: HomePageProps) {
           {/* Hero */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-white/90 dark:bg-primary/15 flex items-center justify-center border border-white/50 dark:border-primary/20 shadow-lg dark:shadow-none">
-                <svg className="w-7 h-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={CLOUD_PATH} />
-                </svg>
-              </div>
+              <AnimatedLogo size="xl" />
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-white dark:text-foreground tracking-tight mb-3 drop-shadow-lg">
               nimbi

@@ -50,8 +50,15 @@ describe('buildChartUrl', () => {
     expect(url).toContain('meteociel.fr')
   })
 
-  it('forces europe scope for TT-only params', () => {
+  it('uses Wetterzentrale for cape in regional scope (GFS)', () => {
+    // GFS uses Wetterzentrale for regional, and cape is available (param 11)
     const url = buildChartUrl('gfs', '2025122800', 'cape', 6, 'regional', { lat: 38, lon: 23 })
+    expect(url).toContain('wetterzentrale.de')
+  })
+
+  it('forces europe scope for truly TT-only params (z500)', () => {
+    // z500 has no wetterzenParam, so falls back to Europe/TT
+    const url = buildChartUrl('gfs', '2025122800', 'z500', 6, 'regional', { lat: 38, lon: 23 })
     expect(url).toContain('tropicaltidbits.com')
   })
 
