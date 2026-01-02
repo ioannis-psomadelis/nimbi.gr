@@ -290,17 +290,30 @@ export const Route = createRootRoute({
         rel: 'stylesheet',
         href: appCss,
       },
+      // Standard favicons first (for Google and browsers)
+      {
+        rel: 'icon',
+        type: 'image/x-icon',
+        href: '/favicon.ico',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '16x16',
+        href: '/favicon-16x16.png',
+      },
+      {
+        rel: 'icon',
+        type: 'image/png',
+        sizes: '32x32',
+        href: '/favicon-32x32.png',
+      },
+      // Animated favicon for browsers that support it
       {
         rel: 'icon',
         type: 'image/gif',
         sizes: '32x32',
         href: '/favicon-animated.gif',
-      },
-      {
-        rel: 'icon',
-        type: 'image/x-icon',
-        sizes: '32x32',
-        href: '/favicon.ico',
       },
       {
         rel: 'apple-touch-icon',
