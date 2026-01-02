@@ -8,8 +8,12 @@
  * Outputs:
  * - public/favicon.ico (32x32 static)
  * - public/favicon-animated.gif (32x32 animated)
+ * - public/favicon-16x16.png (16x16 static)
+ * - public/favicon-32x32.png (32x32 static)
  * - public/apple-touch-icon.png (180x180 static)
- * - public/og-logo.gif (512x512 animated)
+ * - public/icon-192x192.png (192x192 PWA icon)
+ * - public/icon-512x512.png (512x512 PWA icon)
+ * - public/og-image.png (1200x630 branded)
  */
 
 import puppeteer from 'puppeteer'
@@ -40,9 +44,11 @@ const FRAME_DELAY = 100 // Delay between GIF frames in ms (100ms = 10fps)
 
 // Output sizes
 const SIZES = {
-  favicon: 32,
+  favicon16: 16,
+  favicon32: 32,
   appleTouchIcon: 180,
-  ogImage: 512,
+  pwa192: 192,
+  pwa512: 512,
 }
 
 function loadSvgContent(iconName) {
@@ -301,9 +307,11 @@ async function main() {
     // Collect all frames for the complete animation cycle
     console.log('📸 Capturing frames for each weather state...')
     const allFrames = {
-      [SIZES.favicon]: [],
+      [SIZES.favicon16]: [],
+      [SIZES.favicon32]: [],
       [SIZES.appleTouchIcon]: [],
-      [SIZES.ogImage]: [],
+      [SIZES.pwa192]: [],
+      [SIZES.pwa512]: [],
     }
 
     for (const iconName of WEATHER_SEQUENCE) {
@@ -320,15 +328,30 @@ async function main() {
 
     // Favicon (static .ico)
     console.log('  - favicon.ico (32x32 static)')
-    await createIco(allFrames[SIZES.favicon][0], join(PUBLIC_DIR, 'favicon.ico'))
+    await createIco(allFrames[SIZES.favicon32][0], join(PUBLIC_DIR, 'favicon.ico'))
 
     // Animated favicon GIF
     console.log('  - favicon-animated.gif (32x32 animated)')
     await createAnimatedGif(
-      allFrames[SIZES.favicon],
-      SIZES.favicon,
+      allFrames[SIZES.favicon32],
+      SIZES.favicon32,
       join(PUBLIC_DIR, 'favicon-animated.gif'),
       FRAME_DELAY
+    )
+
+    // Favicon PNGs
+    console.log('  - favicon-16x16.png (16x16 static)')
+    await createStaticPng(
+      allFrames[SIZES.favicon16][0],
+      SIZES.favicon16,
+      join(PUBLIC_DIR, 'favicon-16x16.png')
+    )
+
+    console.log('  - favicon-32x32.png (32x32 static)')
+    await createStaticPng(
+      allFrames[SIZES.favicon32][0],
+      SIZES.favicon32,
+      join(PUBLIC_DIR, 'favicon-32x32.png')
     )
 
     // Apple touch icon (static)
@@ -339,6 +362,21 @@ async function main() {
       join(PUBLIC_DIR, 'apple-touch-icon.png')
     )
 
+    // PWA icons
+    console.log('  - icon-192x192.png (192x192 PWA icon)')
+    await createStaticPng(
+      allFrames[SIZES.pwa192][0],
+      SIZES.pwa192,
+      join(PUBLIC_DIR, 'icon-192x192.png')
+    )
+
+    console.log('  - icon-512x512.png (512x512 PWA icon)')
+    await createStaticPng(
+      allFrames[SIZES.pwa512][0],
+      SIZES.pwa512,
+      join(PUBLIC_DIR, 'icon-512x512.png')
+    )
+
     // Branded OG image
     console.log('  - og-image.png (1200x630 branded)')
     await createBrandedOgImage(browser, join(PUBLIC_DIR, 'og-image.png'))
@@ -347,7 +385,11 @@ async function main() {
     console.log('\nGenerated:')
     console.log('  • favicon.ico - Static fallback')
     console.log('  • favicon-animated.gif - Animated for modern browsers')
+    console.log('  • favicon-16x16.png - Small favicon')
+    console.log('  • favicon-32x32.png - Standard favicon')
     console.log('  • apple-touch-icon.png - iOS home screen icon')
+    console.log('  • icon-192x192.png - PWA icon (192x192)')
+    console.log('  • icon-512x512.png - PWA icon (512x512)')
     console.log('  • og-image.png - Social media sharing (branded)')
   } finally {
     await browser.close()
